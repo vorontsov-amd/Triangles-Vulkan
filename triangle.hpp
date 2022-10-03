@@ -10,6 +10,7 @@ namespace Geomitric
     struct Triangle;
     struct Plane;
     struct Segment;
+    enum class rotate_t;
 
     using array = std::array<Double, 3>;
 
@@ -26,9 +27,12 @@ namespace Geomitric
     array CalcDistance(const Triangle& triangle, const Plane& plane);
     Line LinePlaneIntersect(const Plane& first, const Plane& second);
     Triangle ProjectionToLine(const Triangle& triangle, const Line& line);
-    void SortTrianglePoint(Vector& distance, Triangle& triangle, Triangle& projection);
-    Segment CalcSegmentIntersect(Triangle& triangle, Vector& distances, Triangle& projections);
+    void SortTrianglePoint(array& distance, Triangle& triangle, Triangle& projection);
+    Segment CalcSegmentIntersect(Triangle& triangle, array& distances, Triangle& projections);
     bool SegmentIntersect(const Segment& seg_1, const Segment& seg_2);
+    
+    template <typename T> 
+    void swap(T& first, T& second, T& third, rotate_t rotate);
 
     struct Vector
     {
@@ -135,5 +139,32 @@ namespace Geomitric
     {
         return left.a == right.a && left.b == right.b && left.c == right.c;
     }
+
+    enum class rotate_t
+    {
+        left,
+        right,
+    };
+
+    template <typename T> 
+    void swap(T& first, T& second, T& third, rotate_t rotate)
+    {
+        auto temp = second;
+        switch (rotate)
+        {
+        case rotate_t::left:
+            second = third;
+            third  = first;
+            first  = temp;
+            break;
+        case rotate_t::right:
+            second = first;
+            first  = third;
+            third  = temp;
+            break;
+        default:
+            break;
+        }
+    } 
 
 }; // namespace Geomitric

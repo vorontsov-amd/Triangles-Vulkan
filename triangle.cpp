@@ -31,14 +31,14 @@ namespace Geomitric
                 return false;
             }
             
-        // Line plane_intersection = LinePlaneIntersect(first, second);
-        // Triangle first_project  = ProjectionToLine(first, plane_intersection);
-        // Triangle second_project = ProjectionToLine(second, plane_intersection);
+        Line plane_intersection = LinePlaneIntersect(first, second);
+        Triangle first_project  = ProjectionToLine(first, plane_intersection);
+        Triangle second_project = ProjectionToLine(second, plane_intersection);
 
-        // Segment first_segment  = CalcSegmentIntersect(first, first_distance, first_project);   
-        // Segment second_segment = CalcSegmentIntersect(second, second_distance, second_project);
+        Segment first_segment  = CalcSegmentIntersect(first, first_distance, first_project);   
+        Segment second_segment = CalcSegmentIntersect(second, second_distance, second_project);
 
-        // return SegmentIntersect(first_segment, second_segment);  
+        return SegmentIntersect(first_segment, second_segment);  
     }
 
     Line LinePlaneIntersect(const Plane& first, const Plane& second)
@@ -83,54 +83,30 @@ namespace Geomitric
                        triangle.P2 * plane.normal() + plane.d};
     }  
 
-    void SortTrianglePoint(Vector& distance, Triangle& triangle, Triangle& projection)
+    void SortTrianglePoint(array& distance, Triangle& triangle, Triangle& projection)
     {
-        if (distance.x < 0 and distance.y < 0 and distance.z > 0 or
-            distance.x > 0 and distance.y > 0 and distance.z < 0)
+        if (distance[0] < 0 and distance[1] < 0 and distance[2] > 0 or
+            distance[0] > 0 and distance[1] > 0 and distance[2] < 0)
         {
-            auto temp_point       = triangle.P1;
-            auto temp_project     = projection.P1;
-            auto temp_distance    = distance.y;
-
-            triangle.P1   = triangle.P2;
-            distance.y    = distance.z;
-            projection.P1 = projection.P2;
-
-            triangle.P2   = triangle.P0;
-            distance.z    = distance.x;
-            projection.P2 = projection.P0;
-
-            triangle.P0   = temp_point;
-            distance.x    = temp_distance;
-            projection.P0 = temp_project;
+            swap(distance[0],   distance[1],   distance[2],   rotate_t::left);
+            swap(triangle.P0,   triangle.P1,   triangle.P2,   rotate_t::left);
+            swap(projection.P0, projection.P1, projection.P2, rotate_t::left);
         }                             
-        else if (distance.x > 0 and distance.y < 0 and distance.z < 0 or
-                 distance.x < 0 and distance.y > 0 and distance.z > 0)
+        else if (distance[0] > 0 and distance[1] < 0 and distance[3] < 0 or
+                 distance[0] < 0 and distance[1] > 0 and distance[3] > 0)
         {
-            auto temp_point       = triangle.P1;
-            auto temp_project     = projection.P1;
-            auto temp_distance    = distance.y;
-
-            triangle.P1   = triangle.P0;
-            distance.y    = distance.x;
-            projection.P1 = projection.P0;
-
-            triangle.P0   = triangle.P2;
-            distance.x    = distance.z;
-            projection.P0 = projection.P2;
-
-            triangle.P2   = temp_point;
-            distance.z    = temp_distance;
-            projection.P2 = temp_project;  
+            swap(distance[0],   distance[1],   distance[2],   rotate_t::right);
+            swap(triangle.P0,   triangle.P1,   triangle.P2,   rotate_t::right);
+            swap(projection.P0, projection.P1, projection.P2, rotate_t::right);
         }            
     }
 
-    Segment CalcSegmentIntersect(Triangle& triangle, Vector& distances, Triangle& projection)
+    Segment CalcSegmentIntersect(Triangle& triangle, array& distances, Triangle& projection)
     {
         SortTrianglePoint(distances, triangle, projection);
 
-        Vector P0 = projection.P0 + (projection.P1 - projection.P0) * distances.x / (distances.x - distances.y); 
-        Vector P1 = projection.P2 + (projection.P1 - projection.P2) * distances.z / (distances.z - distances.y); 
+        Vector P0 = projection.P0 + (projection.P1 - projection.P0) * distances[0] / (distances[0] - distances[1]); 
+        Vector P1 = projection.P2 + (projection.P1 - projection.P2) * distances[2] / (distances[2] - distances[1]); 
 
         return Segment {P0, P1};
     } 
