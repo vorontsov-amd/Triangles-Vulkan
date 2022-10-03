@@ -10,12 +10,11 @@ public:
     Double(double x) : cx(x) {}
 
     Double& operator*=(Double right) { cx *= right.cx; return *this; }
+    Double& operator/=(Double right) { cx /= right.cx; return *this; }
     Double& operator+=(Double right) { cx += right.cx; return *this; }
     Double& operator-=(Double right) { cx -= right.cx; return *this; }
 
     bool operator==(Double right) const { return std::abs(cx - right.cx) < EPS; }
-
-    bool operator<=(Double right) const { return cx <= right.cx; }
 
     operator double() const { return cx; }
 
@@ -25,6 +24,12 @@ public:
 inline Double operator*(Double left, Double right)
 {   
     left *= right;
+    return left;
+}
+
+inline Double operator/(Double left, Double right)
+{   
+    left /= right;
     return left;
 }
 
@@ -38,6 +43,12 @@ inline Double operator-(Double left, Double right)
 {   
     left -= right;
     return left;
+}
+
+inline Double operator-(Double num)
+{   
+    num *= -1;
+    return num;
 }
 
 inline Double operator^(Double base, int deg)

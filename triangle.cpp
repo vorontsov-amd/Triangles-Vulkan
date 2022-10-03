@@ -6,6 +6,8 @@ namespace Geomitric
     {
         Plane first_plane {first}, second_plane {second};
         
+        //std::cout << first_plane << "\n" << second_plane << "\n";
+
         if (first_plane || second_plane)
         {
             if (first_plane.d != second_plane.d)
@@ -32,13 +34,14 @@ namespace Geomitric
             }
             
         Line plane_intersection = LinePlaneIntersect(first, second);
+
         Triangle first_project  = ProjectionToLine(first, plane_intersection);
         Triangle second_project = ProjectionToLine(second, plane_intersection);
 
         Segment first_segment  = CalcSegmentIntersect(first, first_distance, first_project);   
         Segment second_segment = CalcSegmentIntersect(second, second_distance, second_project);
 
-        return SegmentIntersect(first_segment, second_segment);  
+        return SegmentIntersect(first_segment, second_segment, plane_intersection);  
     }
 
     Line LinePlaneIntersect(const Plane& first, const Plane& second)
@@ -85,15 +88,15 @@ namespace Geomitric
 
     void SortTrianglePoint(array& distance, Triangle& triangle, Triangle& projection)
     {
-        if (distance[0] < 0 and distance[1] < 0 and distance[2] > 0 or
-            distance[0] > 0 and distance[1] > 0 and distance[2] < 0)
+        if (distance[0] <= 0.0 and distance[1] <= 0.0 and distance[2] > 0.0 or
+            distance[0] >= 0.0 and distance[1] >= 0.0 and distance[2] < 0.0)
         {
             swap(distance[0],   distance[1],   distance[2],   rotate_t::left);
             swap(triangle.P0,   triangle.P1,   triangle.P2,   rotate_t::left);
             swap(projection.P0, projection.P1, projection.P2, rotate_t::left);
         }                             
-        else if (distance[0] > 0 and distance[1] < 0 and distance[3] < 0 or
-                 distance[0] < 0 and distance[1] > 0 and distance[3] > 0)
+        else if (distance[0] > 0.0 and distance[1] <= 0.0 and distance[3] <= 0.0 or
+                 distance[0] < 0.0 and distance[1] >= 0.0 and distance[3] >= 0.0)
         {
             swap(distance[0],   distance[1],   distance[2],   rotate_t::right);
             swap(triangle.P0,   triangle.P1,   triangle.P2,   rotate_t::right);
@@ -105,6 +108,9 @@ namespace Geomitric
     {
         SortTrianglePoint(distances, triangle, projection);
 
+        //std::cout << triangle.P0 << "\n" << triangle.P1 << "\n";
+        //std::cout << (distances[0] - distances[1]) << "\n";
+
         Vector P0 = projection.P0 + (projection.P1 - projection.P0) * distances[0] / (distances[0] - distances[1]); 
         Vector P1 = projection.P2 + (projection.P1 - projection.P2) * distances[2] / (distances[2] - distances[1]); 
 
@@ -112,32 +118,82 @@ namespace Geomitric
     } 
 
 
-    bool SegmentIntersect(const Segment& seg_1, const Segment& seg_2) 
+    bool SegmentIntersect(const Segment& seg_1, const Segment& seg_2, const Line& line) 
     {
-        double T1_1 = seg_1.T1.x;
-        double T1_2 = seg_1.T2.x;
-        double T2_1 = seg_2.T1.x;
-        double T2_2 = seg_2.T2.x;
+        auto max = maxComponent(line.direction);
+        
+        double T1_1 = seg_1.T1[max];
+        double T1_2 = seg_1.T2[max];
+        double T2_1 = seg_2.T1[max];
+        double T2_2 = seg_2.T2[max];
 
         if (T1_1 > T1_2)
         {
-            auto temp = T1_1;
-            T1_1 = T1_2;
-            T1_2 = temp;
+            std::swap(T1_1, T1_2);
         }
 
         if (T2_1 > T2_2)
         {
-            auto temp = T2_1;
-            T2_1 = T2_2;
-            T2_2 = temp;
+            std::swap(T2_1, T2_2);
         }
 
-        return T1_1 <= T2_1 and T2_2 <= T1_2 ||
-            T2_1 <= T1_1 and T1_2 <= T2_2 ||
-            T1_1 <= T2_1 and T1_2 <= T2_2 ||
-            T2_1 <= T1_1 and T2_2 <= T1_2; 
+        //std::cout << T1_1 << " " << T1_2 << " "
+        //          << T2_1 << " " << T2_2 << "\n";
+
+        return  T1_1 <= T2_1 and T2_2 <= T1_2 or
+                T2_1 <= T1_1 and T1_2 <= T2_2 or
+                T1_1 <= T2_1 and T1_2 <= T2_2 or
+                T2_1 <= T1_1 and T2_2 <= T1_2; 
                 
     }
+
+    component_t maxComponent(const Vector& vec)
+    {
+        const auto &x = vec.x, &y = vec.y, &z = vec.z; 
+        const auto &max = std::max({x, y, z});
+
+        if (max == x) return component_t::x;
+        else if (max == y) return component_t::y;
+        else return component_t::z;
+    }
+
+
+    /*bool TestIntersection(const Triangle& C0, const Triangle& C1)
+    {
+        // test edge normals of C0 for separation
+        for (int i0 = 0, i1 = 2; i0 < 3; i1 = i0, i0++)
+        {
+            Vector D = Perp(C0.E(i1)); // C0.E(i1) = C0.V(i0) - C0.V(i1)
+            ComputeInterval(C0, D, min0, max0);
+            ComputeInterval(C1, D, min1, max1);
+            if (max1 < min0 || max0 < min1)
+            return false;
+        }
+        // test edge normals of C1 for separation
+        for (i0 = 0, i1 = C1.N - 1; i0 < C1.N; i1 = i0, i0++) 
+        {
+            D = Perp(C1.E(i1)); // C1.E(i1) = C1.V(i0) - C1.V(i1));
+            ComputeInterval(C0, D, min0, max0);
+            ComputeInterval(C1, D, min1, max1);
+            if (max1 < min0 || max0 < min1)
+            return false;
+        }
+        return true;
+    }
+
+
+    void ComputeInterval(ConvexPolygon C, Point D, float& min, float& max)
+    {
+        min = max = Dot(D, C.V(0));
+        for (i = 1; i < C.N; i++) 
+        {
+        value = Dot(D, C.V(i));
+        if (value < min)
+        min = value;
+        else if (value > max)
+        max = value;
+        }
+    }*/
+
 
 };

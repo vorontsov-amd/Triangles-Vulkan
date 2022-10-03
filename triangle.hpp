@@ -11,6 +11,7 @@ namespace Geomitric
     struct Plane;
     struct Segment;
     enum class rotate_t;
+    enum class component_t;
 
     using array = std::array<Double, 3>;
 
@@ -29,10 +30,16 @@ namespace Geomitric
     Triangle ProjectionToLine(const Triangle& triangle, const Line& line);
     void SortTrianglePoint(array& distance, Triangle& triangle, Triangle& projection);
     Segment CalcSegmentIntersect(Triangle& triangle, array& distances, Triangle& projections);
-    bool SegmentIntersect(const Segment& seg_1, const Segment& seg_2);
-    
+    bool SegmentIntersect(const Segment& seg_1, const Segment& seg_2, const Line& line);
+    component_t maxComponent(const Vector& vec);
+
     template <typename T> 
     void swap(T& first, T& second, T& third, rotate_t rotate);
+
+    enum class component_t
+    {
+        x, y, z,
+    };
 
     struct Vector
     {
@@ -55,6 +62,30 @@ namespace Geomitric
                 clength = std::sqrt(x * x + y * y + z * z);
             }
             return clength;
+        }
+
+        friend std::ostream& operator<<(std::ostream& out, const Vector& vec)
+        {
+            return out << "{ " << vec.x << ", " << vec.y << ", " << vec.z << " }";
+        }
+
+        const Double operator[] (component_t comp) const
+        {
+            switch (comp)
+            {
+            case component_t::x:
+                return x;
+                break;
+            case component_t::y:
+                return y;
+                break;
+            case component_t::z:
+                return z;
+                break;
+            default:
+                break;
+            }
+            throw "wtf";
         }
     };
 
@@ -106,6 +137,44 @@ namespace Geomitric
         Vector P0 = {1, 0, 0};
         Vector P1 = {0, 1, 0};
         Vector P2 = {0, 0, 1};
+
+        const Vector& operator[] (int num) const
+        {
+            switch (num)
+            {
+            case 0:
+                return P0;
+                break;
+            case 1:
+                return P1;
+                break;
+            case 2:
+                return P2;
+                break;
+            default:
+                break;
+            }
+            throw "LOL";
+        }
+
+        // Vector side (int num) const
+        // {
+        //     switch (num)
+        //     {
+        //     case 0:
+        //         return P1 - P0;
+        //         break;
+        //     case 1:
+        //         return P2 - P1;
+        //         break;
+        //     case 2:
+        //         return P0 - P2;
+        //         break;
+        //     default:
+        //         break;
+        //     }
+        //     throw "LOL";
+        // }
     };
 
     struct Segment
@@ -120,19 +189,24 @@ namespace Geomitric
 
         Plane(const Triangle& triangle)
         {
-            a = (triangle.P0.y - triangle.P0.y) * (triangle.P2.z - triangle.P0.z) - 
-                (triangle.P2.y - triangle.P0.y) * (triangle.P0.z - triangle.P0.z);
+            a = (triangle.P1.y - triangle.P0.y) * (triangle.P2.z - triangle.P0.z) - 
+                (triangle.P2.y - triangle.P0.y) * (triangle.P1.z - triangle.P0.z);
 
-            b = (triangle.P0.x - triangle.P0.x) * (triangle.P2.z - triangle.P0.z) -
-                (triangle.P2.x - triangle.P0.x) * (triangle.P0.z - triangle.P0.z);
+            b = -(triangle.P1.x - triangle.P0.x) * (triangle.P2.z - triangle.P0.z) -
+                 (triangle.P2.x - triangle.P0.x) * (triangle.P1.z - triangle.P0.z);
     
-            c = (triangle.P0.x - triangle.P0.x) * (triangle.P2.y - triangle.P0.y) -
-                (triangle.P2.x - triangle.P0.x) * (triangle.P0.y - triangle.P0.y);
+            c = (triangle.P1.x - triangle.P0.x) * (triangle.P2.y - triangle.P0.y) -
+                (triangle.P2.x - triangle.P0.x) * (triangle.P1.y - triangle.P0.y);
             
-            d = - (triangle.P0.x * a + triangle.P0.y * b + triangle.P0.z * c); 
+            d = -(triangle.P0.x * a + triangle.P0.y * b + triangle.P0.z * c); 
         }
 
         Vector normal() const { Vector n = {a, b, c}; return n / n.length(); }
+
+        friend std::ostream& operator<<(std::ostream& out, const Plane& plane)
+        {
+            return out << "a = " << plane.a << ", b = " << plane.b << ", c = " << plane.c << ", d = " << plane.d;
+        }
     };
 
     inline bool operator||(const Plane& left, const Plane& right)
