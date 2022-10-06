@@ -24,7 +24,7 @@ namespace Geomitric
     Vector operator/(const Vector& vec, Double num);
     Vector cross(const Vector& left, const Vector& right);
     bool TrianglesIntersect(Triangle& first, Triangle& second);  
-    bool TrianglesIntersect2D(Triangle& first, Triangle& second);
+    bool TrianglesIntersect2D(Triangle& first, Triangle& second, const Vector& normal);
     array CalcDistance(const Triangle& triangle, const Plane& plane);
     Line LinePlaneIntersect(const Plane& first, const Plane& second);
     Triangle ProjectionToLine(const Triangle& triangle, const Line& line);
@@ -32,6 +32,10 @@ namespace Geomitric
     Segment CalcSegmentIntersect(Triangle& triangle, array& distances, Triangle& projections);
     bool SegmentIntersect(const Segment& seg_1, const Segment& seg_2, const Line& line);
     component_t maxComponent(const Vector& vec);
+    bool TestIntersection(const Triangle& C0, const Triangle& C1, component_t x, component_t y);
+    Vector perp(const Vector& side, component_t x, component_t y);
+    void ComputeInterval(const Triangle& triangle, const Vector& vec, double& min, double& max);
+
 
     template <typename T> 
     void swap(T& first, T& second, T& third, rotate_t rotate);
@@ -48,6 +52,7 @@ namespace Geomitric
     public:
         Double x = 0, y = 0, z = 0; 
 
+        Vector() : Vector(0, 0, 0) {}
         Vector(double x_, double y_, double z_) : x(x_), y(y_), z(z_) {}
 
         Vector ProjectonTo(const Vector& vec) const
@@ -69,7 +74,31 @@ namespace Geomitric
             return out << "{ " << vec.x << ", " << vec.y << ", " << vec.z << " }";
         }
 
-        const Double operator[] (component_t comp) const
+        friend std::istream& operator>>(std::istream& in, Vector& vec)
+        {
+            return in >> vec.x >> vec.y >> vec.z;
+        }
+
+        const Double& operator[] (component_t comp) const
+        {
+            switch (comp)
+            {
+            case component_t::x:
+                return x;
+                break;
+            case component_t::y:
+                return y;
+                break;
+            case component_t::z:
+                return z;
+                break;
+            default:
+                break;
+            }
+            throw "wtf";
+        }
+
+        Double& operator[] (component_t comp)
         {
             switch (comp)
             {
@@ -175,6 +204,11 @@ namespace Geomitric
         //     }
         //     throw "LOL";
         // }
+
+        friend std::istream& operator>>(std::istream& in, Triangle& trian)
+        {
+            return in >> trian.P0 >> trian.P1 >> trian.P2;
+        }
     };
 
     struct Segment
@@ -207,6 +241,7 @@ namespace Geomitric
         {
             return out << "a = " << plane.a << ", b = " << plane.b << ", c = " << plane.c << ", d = " << plane.d;
         }
+
     };
 
     inline bool operator||(const Plane& left, const Plane& right)

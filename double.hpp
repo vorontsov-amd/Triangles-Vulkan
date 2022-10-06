@@ -4,7 +4,7 @@
 class Double
 {
 private:
-    constexpr static double EPS = 1e-7;
+    constexpr const static double EPS = 1e-7;
     double cx;
 public:
     Double(double x) : cx(x) {}
@@ -19,6 +19,8 @@ public:
     operator double() const { return cx; }
 
     friend std::ostream& operator<<(std::ostream& out, const Double& num) { return out << num.cx; }
+    friend std::istream& operator>>(std::istream& in ,       Double& num) { return in  >> num.cx; }
+
 };
 
 inline Double operator*(Double left, Double right)

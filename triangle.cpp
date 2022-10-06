@@ -14,9 +14,7 @@ namespace Geomitric
             {
                 return false;
             }
-
-            // do something
-            return TrianglesIntersect2D(first, second);
+            return TrianglesIntersect2D(first, second, first_plane.normal());
         }
 
         auto first_distance = CalcDistance(first, second_plane);
@@ -64,11 +62,29 @@ namespace Geomitric
         return result;
     }
 
-    bool TrianglesIntersect2D(Triangle& first, Triangle& second)
+    bool TrianglesIntersect2D(Triangle& first, Triangle& second, const Vector& normal)
     {
-        // do something
-        std::cout << "LOL\n";
-        abort();
+        auto max = maxComponent(normal);
+
+        auto x = max, y = max;
+
+        switch (max)
+        {
+        case component_t::x:
+            x = component_t::y;
+            y = component_t::z;
+            break;
+        case component_t::y:
+            x = component_t::z;
+            y = component_t::x;
+        case component_t::z:
+            x = component_t::x;
+            y = component_t::y;
+        default:
+            break;
+        }
+
+        return TestIntersection(first, second, x, y);
     }
 
     Triangle ProjectionToLine(const Triangle& triangle, const Line& line)
@@ -157,43 +173,53 @@ namespace Geomitric
         else return component_t::z;
     }
 
-
-    /*bool TestIntersection(const Triangle& C0, const Triangle& C1)
+    bool TestIntersection(const Triangle& C0, const Triangle& C1, component_t x, component_t y)
     {
+        double min0 = NAN, min1 = NAN, max0 = NAN, max1 = NAN;
         // test edge normals of C0 for separation
         for (int i0 = 0, i1 = 2; i0 < 3; i1 = i0, i0++)
         {
-            Vector D = Perp(C0.E(i1)); // C0.E(i1) = C0.V(i0) - C0.V(i1)
+            Vector side = C0[i0] - C0[i1];
+            Vector D = perp(side, x, y); // C0.E(i1) = C0.V(i0) - C0.V(i1)
             ComputeInterval(C0, D, min0, max0);
             ComputeInterval(C1, D, min1, max1);
             if (max1 < min0 || max0 < min1)
-            return false;
+                return false;
         }
-        // test edge normals of C1 for separation
-        for (i0 = 0, i1 = C1.N - 1; i0 < C1.N; i1 = i0, i0++) 
+        // // test edge normals of C1 for separation
+        for (int i0 = 0, i1 = 2; i0 < 3; i1 = i0, i0++) 
         {
-            D = Perp(C1.E(i1)); // C1.E(i1) = C1.V(i0) - C1.V(i1));
+            Vector side = C1[i0] - C1[i1];
+            Vector D = perp(side, x, y); // C1.E(i1) = C1.V(i0) - C1.V(i1));
             ComputeInterval(C0, D, min0, max0);
             ComputeInterval(C1, D, min1, max1);
             if (max1 < min0 || max0 < min1)
-            return false;
+                return false;
         }
         return true;
     }
 
-
-    void ComputeInterval(ConvexPolygon C, Point D, float& min, float& max)
+    Vector perp(const Vector& side, component_t x, component_t y)
     {
-        min = max = Dot(D, C.V(0));
-        for (i = 1; i < C.N; i++) 
+        Vector res = {};
+        res[x] = side[y];
+        res[y] = -side[x];
+        return res;
+    }
+
+
+    void ComputeInterval(const Triangle& triangle, const Vector& vec, double& min, double& max)
+    {
+        min = max = vec * triangle[0];
+        for (int i = 1; i < 3; i++) 
         {
-        value = Dot(D, C.V(i));
-        if (value < min)
-        min = value;
-        else if (value > max)
-        max = value;
+            double value = vec * triangle[i];
+            if (value < min)
+                min = value;
+            else if (value > max)
+                max = value;
         }
-    }*/
+    }
 
 
 };
