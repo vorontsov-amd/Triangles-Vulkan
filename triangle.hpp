@@ -17,11 +17,13 @@ namespace Geomitric
 
     bool operator||(const Plane& left, const Plane& right);
     Double operator*(const Vector& left, const Vector& right);
-    Vector operator*(Double num, const Vector& vec);
-    Vector operator*(const Vector& vec, Double num);
+    Vector operator*(const Double& num, const Vector& vec);
+    Vector operator*(const Vector& vec, const Double& num);
     Vector operator+(const Vector& left, const Vector& right);
     Vector operator-(const Vector& left, const Vector& right);
-    Vector operator/(const Vector& vec, Double num);
+    Vector operator-(Vector&& left, Vector&& right);
+    Vector operator/(const Vector& vec, const Double& num);
+    Vector operator/(Vector&& vec, Double&& num);
     Vector cross(const Vector& left, const Vector& right);
     bool TrianglesIntersect(Triangle& first, Triangle& second);  
     bool TrianglesIntersect2D(Triangle& first, Triangle& second, const Vector& normal);
@@ -60,14 +62,23 @@ namespace Geomitric
             return vec * ((*this * vec) / (vec * vec));
         }
     
+        Vector& normalize()
+        {
+            double len = length();
+            x /= len;
+            y /= len;
+            z /= len;
+            return *this;
+        }
+
         double length()
         {
-            if (std::isnan(clength))
-            {
-                clength = std::sqrt(x * x + y * y + z * z);
-            }
-            return clength;
+            return std::sqrt(x * x + y * y + z * z);
         }
+
+        Vector& operator/=(double num) { x /= num; y /= num; z /= num; return *this; }
+        Vector& operator-=(const Vector& vec) { x -= vec.x; y -= vec.y; z -= vec.z; return *this; }
+        Vector& operator+=(const Vector& vec) { x += vec.x; y += vec.y; z += vec.z; return *this; }
 
         friend std::ostream& operator<<(std::ostream& out, const Vector& vec)
         {
@@ -123,19 +134,24 @@ namespace Geomitric
         return Double {left.x * right.x + left.y * right.y + left.z * right.z};
     }
 
-    inline Vector operator*(Double num, const Vector& vec)
+    inline Vector operator*(const Double& num, const Vector& vec)
     {
         return Vector {vec.x * num, vec.y * num, vec.z * num};
     }
 
-    inline Vector operator*(const Vector& vec, Double num)
+    inline Vector operator*(const Vector& vec, const Double& num)
     {
         return Vector {vec.x * num, vec.y * num, vec.z * num};
     }
 
-    inline Vector operator/(const Vector& vec, Double num)
+    inline Vector operator/(const Vector& vec, const Double& num)
     {
         return Vector {vec.x / num, vec.y / num, vec.z / num};
+    }
+
+    inline Vector operator/(Vector&& vec, Double&& num)
+    {
+        return vec /= num;
     }
 
     inline Vector operator+(const Vector& left, const Vector& right)
@@ -143,9 +159,19 @@ namespace Geomitric
         return Vector {left.x + right.x, left.y + right.y, left.z + right.z};
     }
 
+    inline Vector operator+(Vector& left, Vector& right)
+    {
+        return left += right;
+    }
+
     inline Vector operator-(const Vector& left, const Vector& right)
     {
         return Vector {left.x - right.x, left.y - right.y, left.z - right.z};
+    }
+
+    inline Vector operator-(Vector&& left, Vector&& right)
+    {
+        return left -= right;
     }
 
     inline Vector cross(const Vector& left, const Vector& right)
@@ -209,6 +235,11 @@ namespace Geomitric
         {
             return in >> trian.P0 >> trian.P1 >> trian.P2;
         }
+
+        friend std::ostream& operator<<(std::ostream& out, const Triangle& trian)
+        {
+            return out << trian.P0 << "\t" << trian.P1 << "\t" << trian.P2;
+        }
     };
 
     struct Segment
@@ -235,7 +266,7 @@ namespace Geomitric
             d = -(triangle.P0.x * a + triangle.P0.y * b + triangle.P0.z * c); 
         }
 
-        Vector normal() const { Vector n = {a, b, c}; return n / n.length(); }
+        Vector normal() const { return Vector {a, b, c}; }
 
         friend std::ostream& operator<<(std::ostream& out, const Plane& plane)
         {

@@ -29,36 +29,11 @@ inline Double operator*(const Double& left, const Double& right)
     return res;
 }
 
-inline Double operator*(Double&& left, Double&& right)
-{   
-    return left *= right;
-}
-
-inline Double operator*(Double&& left, const Double&& right)
-{   
-    return left *= right;
-}
-
-inline Double operator*(const Double& left, Double&& right)
-{   
-    return right *= left;
-}
-
 inline Double operator/(const Double& left, const Double& right)
 {   
     Double res {left};
     res /= right;
     return res;
-}
-
-inline Double operator/(Double&& left, const Double& right)
-{   
-    return left /= right;
-}
-
-inline Double operator/(Double&& left, Double&& right)
-{   
-    return left /= right;
 }
 
 inline Double operator+(const Double& left, const Double& right)
@@ -68,41 +43,11 @@ inline Double operator+(const Double& left, const Double& right)
     return res;
 }
 
-inline Double operator+(Double&& left, Double&& right)
-{   
-    return left += right;
-}
-
-inline Double operator+(Double&& left, const Double& right)
-{   
-    return left += right;
-}
-
-inline Double operator+(const Double& left, Double&& right)
-{   
-    return right += left;
-}
-
 inline Double operator-(const Double& left, const Double& right)
 {   
     Double res {left};
     res -= right;
     return res;
-}
-
-inline Double operator-(Double&& left, Double&& right)
-{   
-    return left -= right;
-}
-
-inline Double operator-(Double&& left, const Double& right)
-{   
-    return left -= right;
-}
-
-inline Double operator-(const Double& left, Double&& right)
-{   
-    return right -= left;
 }
 
 inline Double operator-(const Double& num)
@@ -112,17 +57,12 @@ inline Double operator-(const Double& num)
     return res;
 }
 
-inline Double operator-(Double&& num)
-{   
-    return num *= -1;
-}
-
 inline Double operator^(const Double& base, int deg)
 {
     if (deg == 0) return 1; 
     if ((deg & 1) != 0) return (base ^ (deg - 1)) * base;
     
-    Double&& result = base ^ (deg / 2);
+    Double result = base ^ (deg / 2);
 
     return result * result;
 }
