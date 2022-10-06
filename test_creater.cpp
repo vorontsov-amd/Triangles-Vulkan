@@ -4,21 +4,21 @@ int main(int argc, char const *argv[])
 {
     std::ofstream out("test.txt");
 
-    out << "1000 \n";
+    out << "10000 \n";
 
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < 10000; i++)
     {
-        out << int(rand() % 1000) << " "
-            << int(rand() % 1000) << " "
-            << int(rand() % 1000) << "\t";
+        out << (rand() % 10) << " "
+            << (rand() % 10) << " "
+            << (rand() % 10) << "\t";
 
-        out << int(rand() % 1000) << " "
-            << int(rand() % 1000) << " "
-            << int(rand() % 1000) << "\t";
+        out << (rand() % 10) << " "
+            << (rand() % 10) << " "
+            << (rand() % 10) << "\t";
 
-        out << int(rand() % 1000) << " "
-            << int(rand() % 1000) << " "
-            << int(rand() % 1000) << "\n";
+        out << (rand() % 10) << " "
+            << (rand() % 10) << " "
+            << (rand() % 10) << "\n";
     }
 
     return 0;

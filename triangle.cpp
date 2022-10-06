@@ -83,7 +83,6 @@ namespace Geomitric
         default:
             break;
         }
-
         return TestIntersection(first, second, x, y);
     }
 
