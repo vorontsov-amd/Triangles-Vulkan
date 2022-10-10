@@ -8,7 +8,7 @@ namespace Geomitric
         
         if (first_plane || second_plane)
         {
-            if (first_plane.d != second_plane.d)
+            if (!isEqual(first_plane.d, second_plane.d))
             {
                 return false;
             }
@@ -51,14 +51,14 @@ namespace Geomitric
                 
         result.direction = direction;
 
-        const Double & s1 = first.d, & s2 = second.d;
+        const double & s1 = first.d, & s2 = second.d;
 
-        Double && n1n2 = norm_1 * norm_2;
-        Double && n1normsqr = norm_1 * norm_1;
-        Double && n2normsqr = norm_2 * norm_2;
+        double && n1n2 = norm_1 * norm_2;
+        double && n1normsqr = norm_1 * norm_1;
+        double && n2normsqr = norm_2 * norm_2;
 
-        Double && a = (s2 * n1n2 - s1 * n2normsqr) / ((n1n2 ^ 2) - n1normsqr * n2normsqr);
-        Double && b = (s1 * n1n2 - s2 * n2normsqr) / ((n1n2 ^ 2) - n1normsqr * n2normsqr);
+        double && a = (s2 * n1n2 - s1 * n2normsqr) / ((n1n2 * n1n2) - n1normsqr * n2normsqr);
+        double && b = (s1 * n1n2 - s2 * n2normsqr) / ((n1n2 * n1n2) - n1normsqr * n2normsqr);
         result.entry = a * norm_2 + b * norm_1;
 
         return result;
@@ -164,8 +164,8 @@ namespace Geomitric
         const auto &x = vec.x, &y = vec.y, &z = vec.z; 
         const auto && max = std::max({x, y, z});
 
-        if (max == x) return component_t::x;
-        else if (max == y) return component_t::y;
+        if (isEqual(max, x)) return component_t::x;
+        else if (isEqual(max, y)) return component_t::y;
         else return component_t::z;
     }
 

@@ -13,17 +13,17 @@ namespace Geomitric
     enum class rotate_t;
     enum class component_t;
 
-    using array = std::array<Double, 3>;
+    using array = std::array<double, 3>;
 
     bool operator||(const Plane& left, const Plane& right);
-    Double operator*(const Vector& left, const Vector& right);
-    Vector operator*(const Double& num, const Vector& vec);
-    Vector operator*(const Vector& vec, const Double& num);
+    double operator*(const Vector& left, const Vector& right);
+    Vector operator*(const double& num, const Vector& vec);
+    Vector operator*(const Vector& vec, const double& num);
     Vector operator+(const Vector& left, const Vector& right);
     Vector operator-(const Vector& left, const Vector& right);
     Vector operator-(Vector&& left, Vector&& right);
-    Vector operator/(const Vector& vec, const Double& num);
-    Vector operator/(Vector&& vec, Double&& num);
+    Vector operator/(const Vector& vec, const double& num);
+    Vector operator/(Vector&& vec, double&& num);
     Vector cross(const Vector& left, const Vector& right);
     bool TrianglesIntersect(Triangle& first, Triangle& second);  
     bool TrianglesIntersect2D(Triangle& first, Triangle& second, const Vector& normal);
@@ -39,6 +39,12 @@ namespace Geomitric
     void ComputeInterval(const Triangle& triangle, const Vector& vec, double& min, double& max);
 
 
+    static inline bool isEqual(double a, double b)
+    {
+        const static double EPS = 1e-6;
+        return std::abs(a - b) < EPS;
+    }
+
     template <typename T> 
     void swap(T& first, T& second, T& third, rotate_t rotate);
 
@@ -52,7 +58,7 @@ namespace Geomitric
     private:
         double clength = NAN;
     public:
-        Double x = 0, y = 0, z = 0; 
+        double x = 0, y = 0, z = 0; 
 
         Vector() : Vector(0, 0, 0) {}
         Vector(double x_, double y_, double z_) : x(x_), y(y_), z(z_) {}
@@ -90,7 +96,7 @@ namespace Geomitric
             return in >> vec.x >> vec.y >> vec.z;
         }
 
-        const Double& operator[] (component_t comp) const
+        const double& operator[] (component_t comp) const
         {
             switch (comp)
             {
@@ -109,7 +115,7 @@ namespace Geomitric
             throw "wtf";
         }
 
-        Double& operator[] (component_t comp)
+        double& operator[] (component_t comp)
         {
             switch (comp)
             {
@@ -129,27 +135,27 @@ namespace Geomitric
         }
     };
 
-    inline Double operator*(const Vector& left, const Vector& right)
+    inline double operator*(const Vector& left, const Vector& right)
     {
-        return Double {left.x * right.x + left.y * right.y + left.z * right.z};
+        return double {left.x * right.x + left.y * right.y + left.z * right.z};
     }
 
-    inline Vector operator*(const Double& num, const Vector& vec)
-    {
-        return Vector {vec.x * num, vec.y * num, vec.z * num};
-    }
-
-    inline Vector operator*(const Vector& vec, const Double& num)
+    inline Vector operator*(const double& num, const Vector& vec)
     {
         return Vector {vec.x * num, vec.y * num, vec.z * num};
     }
 
-    inline Vector operator/(const Vector& vec, const Double& num)
+    inline Vector operator*(const Vector& vec, const double& num)
+    {
+        return Vector {vec.x * num, vec.y * num, vec.z * num};
+    }
+
+    inline Vector operator/(const Vector& vec, const double& num)
     {
         return Vector {vec.x / num, vec.y / num, vec.z / num};
     }
 
-    inline Vector operator/(Vector&& vec, Double&& num)
+    inline Vector operator/(Vector&& vec, double&& num)
     {
         return vec /= num;
     }
@@ -250,7 +256,7 @@ namespace Geomitric
 
     struct Plane
     {
-        Double a = 1, b = 1, c = 1, d = 1;
+        double a = 1, b = 1, c = 1, d = 1;
 
         Plane(const Triangle& triangle)
         {
@@ -277,7 +283,9 @@ namespace Geomitric
 
     inline bool operator||(const Plane& left, const Plane& right)
     {
-        return left.a == right.a && left.b == right.b && left.c == right.c;
+        return isEqual(left.a, right.a) and
+               isEqual(left.b, right.b) and
+               isEqual(left.c, right.c);
     }
 
     enum class rotate_t
@@ -306,5 +314,4 @@ namespace Geomitric
             break;
         }
     } 
-
 }; // namespace Geomitric
