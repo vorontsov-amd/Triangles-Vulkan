@@ -41,7 +41,7 @@ namespace Geomitric
 
     static inline bool isEqual(double a, double b)
     {
-        const static double EPS = 1e-6;
+        const static double EPS = 1e-5;
         return std::abs(a - b) < EPS;
     }
 
@@ -77,7 +77,7 @@ namespace Geomitric
             return *this;
         }
 
-        double length()
+        double length() const
         {
             return std::sqrt(x * x + y * y + z * z);
         }
@@ -135,6 +135,16 @@ namespace Geomitric
         }
     };
 
+    inline double determinant (const Vector &first, const Vector &second, const Vector &third) {
+
+        return (first.x * second.y * third.z - 
+                first.x * second.z * third.y -
+                first.y * second.x * third.z +
+                first.y * second.z * third.x +
+                first.z * second.x * third.y -
+                first.z * second.y * third.x);
+    }
+
     inline double operator*(const Vector& left, const Vector& right)
     {
         return left.x * right.x + left.y * right.y + left.z * right.z;
@@ -170,6 +180,14 @@ namespace Geomitric
         return left += right;
     }
 
+    inline bool operator==(const Vector& left, const Vector& right) {
+        return isEqual(left.x,right.x) and isEqual(left.y,right.y) and isEqual(left.z,right.z);
+    }
+
+    inline bool operator!=(const Vector& left, const Vector& right) {
+        return !(left == right);
+    }
+
     inline Vector operator-(const Vector& left, const Vector& right)
     {
         return Vector {left.x - right.x, left.y - right.y, left.z - right.z};
@@ -182,9 +200,9 @@ namespace Geomitric
 
     inline Vector cross(const Vector& left, const Vector& right)
     {
-        return Vector {left.y * right.z - left.z * right.y,
-                       left.x * right.z - left.z * right.x,
-                       left.x * right.y - left.y * right.x};
+        return Vector { left.y * right.z - left.z * right.y,
+                       -left.x * right.z + left.z * right.x,
+                        left.x * right.y - left.y * right.x};
     }
 
     struct Line
@@ -198,6 +216,22 @@ namespace Geomitric
         Vector P0 = {1, 0, 0};
         Vector P1 = {0, 1, 0};
         Vector P2 = {0, 0, 1};
+
+        enum { TRIANGLE = 0b1, POINT = 0b10, SEGMENT = 0b100 } status;
+
+        Triangle() {}
+
+        Triangle(const Vector& p0, const Vector& p1, const Vector& p2) : P0{p0}, P1{p1}, P2{p2} {
+            if ((p0 == p1) and (p1 == p2) and (p2 == p0)) {
+                status = POINT;
+            }
+            else if ((p0 != p1) and (p1 != p2) and (p2 != p0)) {
+                status = TRIANGLE;
+            }
+            else {
+                status = SEGMENT;
+            }
+        }
 
         const Vector& operator[] (int num) const
         {
@@ -220,7 +254,23 @@ namespace Geomitric
 
         friend std::istream& operator>>(std::istream& in, Triangle& trian)
         {
-            return in >> trian.P0 >> trian.P1 >> trian.P2;
+            in >> trian.P0 >> trian.P1 >> trian.P2;
+
+            if ((trian.P0 == trian.P1) and (trian.P1 == trian.P2) and (trian.P2 == trian.P0)) {
+                //puts("point");
+                trian.status = POINT;
+            }
+            else if (((trian.P0 != trian.P1) and (trian.P1 != trian.P2) and (trian.P2 != trian.P0)) 
+                and !isEqual(cross(trian.P0, trian.P1) * trian.P2, 0)){
+                //puts("triangle");
+                trian.status = TRIANGLE;
+            }
+            else {
+                //puts("segment");
+                trian.status = SEGMENT;
+            }
+
+            return in;
         }
 
         friend std::ostream& operator<<(std::ostream& out, const Triangle& trian)
@@ -233,9 +283,58 @@ namespace Geomitric
     {
         Vector T1 = {1, 0, 0};
         Vector T2 = {0, 1, 0};
+
+        Segment() {}
+
+        Segment(const Vector t1, const Vector& t2) : T1{t1}, T2{t2} {}
+
+        Segment(const Triangle& tri) {
+            if (tri.status != Triangle::SEGMENT) {
+                throw std::logic_error("Triangle is not a segment");
+            }
+
+            T1 = tri.P0;
+
+            if (tri.P1 == tri.P0) {
+                T2 = tri.P2;
+            }
+            else if (tri.P2 == tri.P0) {
+                
+                T2 = tri.P1;
+            }
+            else if (tri.P2 == tri.P1) {
+                T2 = tri.P2;
+            }
+            else {
+                Vector candidat_1 = tri.P1 - tri.P0;
+                Vector candidat_2 = tri.P2 - tri.P0;
+                Vector candidat_3 = tri.P2 - tri.P1;
+
+                if (candidat_1.length() > candidat_2.length() and
+                    candidat_1.length() > candidat_3.length()) {
+                        T1 = tri.P0;
+                        T2 = tri.P1;
+                    }
+                else if (candidat_2.length() > candidat_1.length() and
+                    candidat_2.length() > candidat_3.length()) {
+                        T1 = tri.P0;
+                        T2 = tri.P2;
+                    }
+                else {
+                    T1 = tri.P1;
+                    T2 = tri.P2;
+                }
+            }
+        }
     };
 
-    struct Plane
+    inline std::ostream& operator<<(std::ostream& out, const Segment& seg)
+    {
+        return out << seg.T1 << "\t" << seg.T2;
+    }
+
+
+    struct Plane 
     {
         double a = 1, b = 1, c = 1, d = 1;
 
@@ -251,6 +350,13 @@ namespace Geomitric
                 (triangle.P2.x - triangle.P0.x) * (triangle.P1.y - triangle.P0.y);
             
             d = -(triangle.P0.x * a + triangle.P0.y * b + triangle.P0.z * c); 
+
+            if (d != 0) {
+                a /= d;
+                b /= d;
+                c /= d;
+                d  = 1;
+            } 
         }
 
         Vector normal() const { return Vector {a, b, c}; }
