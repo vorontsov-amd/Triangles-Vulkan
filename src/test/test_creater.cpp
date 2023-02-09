@@ -9,25 +9,31 @@ int main(int argc, char const *argv[])
     std::random_device rd;
     std::mt19937 gen(rd());
 
-    std::uniform_real_distribution<> rand(-200, 200);
+    //std::uniform_int_distribution<> zone(0, 8);
+    std::uniform_real_distribution<> rand(-1000, 1000);
+    std::uniform_real_distribution<> randlol(-50, 50);
 
 
 
-    out << "1000000 \n";
+    out << "10000 \n";
 
-    for (int i = 0; i < 1000000; i++)
+    for (int i = 0; i < 10000; i++)
     {
-        out << rand(gen) << " "
-            << rand(gen) << " "
-            << rand(gen) << "\t";
+        auto coord_1 = rand(gen);
+        auto coord_2 = rand(gen);
+        auto coord_3 = rand(gen);
 
-        out << rand(gen) << " "
-            << rand(gen) << " "
-            << rand(gen) << "\t";
+        out << coord_1 << " "
+            << coord_2 << " "
+            << coord_3 << "\t";
 
-        out << rand(gen) << " "
-            << rand(gen) << " "
-            << rand(gen) << "\n";
+        out << coord_1 + randlol(gen) << " "
+            << coord_2 + randlol(gen) << " "
+            << coord_3 + randlol(gen) << "\t";
+
+        out << coord_1 + randlol(gen) << " "
+            << coord_2 + randlol(gen) << " "
+            << coord_3 + randlol(gen) << "\n";
     }
 
     return 0;
