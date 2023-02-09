@@ -19,10 +19,10 @@ namespace {
             
             for (Tree::OctreeNode::ListIt It = List.begin(); It != List.end(); ++It) {
                 bool addSubtreeCounter = GeomObj::IntersectTriangles(tr, *It);
-                bool addSubtreeCounter2 = Intersect3DTriangles(tr, *It);
-                if (addSubtreeCounter2 != addSubtreeCounter) {
-                    std::cerr << "FALI 2\n";
-                }
+                // bool addSubtreeCounter2 = Intersect3DTriangles(tr, *It);
+                // if (addSubtreeCounter2 != addSubtreeCounter) {
+                //     std::cerr << "FALI 2\n";
+                // }
 
                 SubtreeCounter += addSubtreeCounter;
                 
@@ -59,7 +59,10 @@ namespace {
                 bool addCounter2 = Intersect3DTriangles(*ItSlow, *ItFast);
                 if (addCounter != addCounter2) {
                     std::cout << *ItSlow << '\n' << *ItFast << '\n';
-                    std::cerr << "FAIL\n";
+                    std::cerr << "FAIL\n" <<
+                        "My func return " << std::boolalpha << addCounter << 
+                        " but Frolof func return " << addCounter2 << '\n';
+                        std::terminate();
                 }
                 
                 counter += addCounter;
@@ -108,7 +111,7 @@ int GetTriangles () {
 
     std::vector<bool> intersectTriangleFlagArray(countTriangles);
 
-    auto root = mainRoot.getRoot();
+    // auto root = mainRoot.getRoot();
 
     int countIntersection = IntersectionCounter(mainRoot.getRoot(), intersectTriangleFlagArray);
 
@@ -120,7 +123,7 @@ int GetTriangles () {
         }
 
     std::cout << j;
-    double maxCoord = mainRoot.getMaxCoor();
+    // double maxCoord = mainRoot.getMaxCoor();
     
     return countIntersection;
 }
@@ -158,7 +161,7 @@ namespace GeomObj
 
     //---------------------------------------------------------------------------------- 
         std::vector<int> SquareMatrixLines(double matrix [][3], double column[]) {
-            double tmp[3] = {0, 0, 0};
+            // double tmp[3] = {0, 0, 0};
 
             Vector line_0 = {matrix[0][0], matrix[0][1], matrix[0][2]};
             Vector line_1 = {matrix[1][0], matrix[1][1], matrix[1][2]};
@@ -283,7 +286,7 @@ namespace GeomObj
             Vector direct_2 = segment_2.end;
 
             Vector cross_vec  = cross(direct_1,direct_2);
-            Vector difVec = begin_2 - begin_1;
+            // Vector difVec = begin_2 - begin_1;
 
             if (cross_vec == Vector{0,0,0}) {
 
@@ -537,15 +540,15 @@ namespace GeomObj
 
         void SortTrianglePoint(std::vector<double>& distance, Triangle& triangle, Triangle& projection) {
             
-            if (distance[0] <= 0.0 and distance[1] <= 0.0 and distance[2] > 0.0 or
-                distance[0] >= 0.0 and distance[1] >= 0.0 and distance[2] < 0.0)
+            if ((distance[0] <= 0.0 and distance[1] <= 0.0 and distance[2] > 0.0) or
+                (distance[0] >= 0.0 and distance[1] >= 0.0 and distance[2] < 0.0))
             {
                 swap(distance[0],   distance[1],   distance[2],   rotate_t::left);
                 swap(triangle.P0,   triangle.P1,   triangle.P2,   rotate_t::left);
                 swap(projection.P0, projection.P1, projection.P2, rotate_t::left);
             }
-            else if (distance[0] > 0.0 and distance[1] <= 0.0 and distance[2] <= 0.0 or
-                    distance[0] < 0.0 and distance[1] >= 0.0 and distance[2] >= 0.0)
+            else if ((distance[0] > 0.0 and distance[1] <= 0.0 and distance[2] <= 0.0) or
+                    (distance[0] < 0.0 and distance[1] >= 0.0 and distance[2] >= 0.0))
             {
                 swap(distance[0],   distance[1],   distance[2],   rotate_t::right);
                 swap(triangle.P0,   triangle.P1,   triangle.P2,   rotate_t::right);
@@ -589,10 +592,10 @@ namespace GeomObj
                 std::swap(end_1, end_2);
             }
 
-            return  begin_1 <= end_1 and end_2 <= begin_2 or
-                    end_1 <= begin_1 and begin_2 <= end_2 or
-                    begin_1 <= end_1 and begin_2 <= end_2 or
-                    end_1 <= begin_1 and end_2 <= begin_2;
+            return  (begin_1 <= end_1 and end_2 <= begin_2) or
+                    (end_1 <= begin_1 and begin_2 <= end_2) or
+                    (begin_1 <= end_1 and begin_2 <= end_2) or
+                    (end_1 <= begin_1 and end_2 <= begin_2);
 
         }
 
@@ -679,15 +682,15 @@ namespace GeomObj {
         }
 
         auto first_distance = CalcDistance(first, second_plane);
-        if (first_distance[0] < 0 and first_distance[1] < 0 and first_distance[2] < 0 or
-            first_distance[0] > 0 and first_distance[1] > 0 and first_distance[2] > 0) {
+        if ((first_distance[0] < 0 and first_distance[1] < 0 and first_distance[2] < 0) or
+            (first_distance[0] > 0 and first_distance[1] > 0 and first_distance[2] > 0)) {
                 return false;
             }
 
 
         auto second_distance = CalcDistance(second, first_plane);
-        if (second_distance[0] < 0 and second_distance[1] < 0 and second_distance[2] < 0 or
-            second_distance[0] > 0 and second_distance[1] > 0 and second_distance[2] > 0) {
+        if ((second_distance[0] < 0 and second_distance[1] < 0 and second_distance[2] < 0) or
+            (second_distance[0] > 0 and second_distance[1] > 0 and second_distance[2] > 0)) {
                 return false;
             }
 
@@ -912,17 +915,17 @@ using namespace GeomObj;
 
         bool IsIntersectedTIntervals (double firstTParams [2], double secondTParams [2]) {
 
-            if ((isEqual (firstTParams [0], firstTParams [1]) > 0))
+            if ((firstTParams [0] > firstTParams [1]))
                 std::swap (firstTParams [0], firstTParams [1]);
-            if ((isEqual (secondTParams [0], secondTParams [1]) > 0))
+            if ((secondTParams [0] > secondTParams [1]))
                 std::swap (secondTParams [0], secondTParams [1]);
 
             for (int i = 0; i < 2; i++) {
                 
-                if ((isEqual (firstTParams [0], secondTParams [i]) <= 0) && (isEqual (firstTParams [1], secondTParams [i]) >= 0))
+                if (((firstTParams [0] <= secondTParams [i])) && ((firstTParams [1] >= secondTParams [i])))
                     return 1;
                 
-                if ((isEqual (secondTParams [0], firstTParams [i]) <= 0) && (isEqual (secondTParams [1], firstTParams [i]) >= 0))
+                if (((secondTParams [0] <= firstTParams [i])) && ((secondTParams [1] >= firstTParams [i])))
                     return 1;
 
             }
