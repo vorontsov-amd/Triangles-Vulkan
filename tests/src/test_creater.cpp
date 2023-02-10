@@ -1,7 +1,7 @@
 #include <fstream>
 #include <random>
 
-
+#if 0
 int main(int argc, char const *argv[])
 {
     std::ofstream out("test.txt");
@@ -9,7 +9,7 @@ int main(int argc, char const *argv[])
     std::random_device rd;
     std::mt19937 gen(rd());
 
-    //std::uniform_int_distribution<> zone(0, 8);
+    //std::uniform_int_distribution<> zone(0, 8);женишь
     std::uniform_int_distribution<> rand(-1000, 1000);
     std::uniform_int_distribution<> randlol(-50, 50);
 
@@ -36,4 +36,4 @@ int main(int argc, char const *argv[])
 
     return 0;
 }
-
+#endif
