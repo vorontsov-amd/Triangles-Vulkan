@@ -1,6 +1,7 @@
 // #include "triangle.hpp"
 // #include <unordered_set>
 // #include <vector>
+// #include "intersect.hpp"
 
 
 // int main()
@@ -18,7 +19,7 @@
     
 //     std::unordered_set<int> intersect_index;
 
-//     for (int i = 0; i < num_of_triangles; ++i)
+//     for (int i = 309; i < 310; ++i)
 //     {
 //         for (int j = i; j < num_of_triangles; ++j)
 //         {
@@ -31,14 +32,11 @@
 //                 continue;
 //             } 
             
-//             if (GeomObj::TrianglesIntersect(array[i], array[j]))
+//             if (GeomObj::IntersectTriangles(array[i], array[j]))
 //             {
 //                 intersect_index.insert({i, j});
 //                 //s++;
 //             }
-//         }
-//         if (!intersect_index.contains(i)) {
-//             std::cout << array[i] << '\n';
 //         }
 //     }
 

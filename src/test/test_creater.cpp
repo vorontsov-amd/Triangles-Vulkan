@@ -10,14 +10,12 @@ int main(int argc, char const *argv[])
     std::mt19937 gen(rd());
 
     //std::uniform_int_distribution<> zone(0, 8);
-    std::uniform_real_distribution<> rand(-1000, 1000);
-    std::uniform_real_distribution<> randlol(-50, 50);
+    std::uniform_int_distribution<> rand(-100, 100);
+    std::uniform_int_distribution<> randlol(-10, 10);
 
+    out << "1000 \n";
 
-
-    out << "10000 \n";
-
-    for (int i = 0; i < 10000; i++)
+    for (int i = 0; i < 1000; i++)
     {
         auto coord_1 = rand(gen);
         auto coord_2 = rand(gen);

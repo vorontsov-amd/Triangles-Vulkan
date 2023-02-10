@@ -19,10 +19,11 @@ namespace {
             
             for (Tree::OctreeNode::ListIt It = List.begin(); It != List.end(); ++It) {
                 bool addSubtreeCounter = GeomObj::IntersectTriangles(tr, *It);
-                // bool addSubtreeCounter2 = Intersect3DTriangles(tr, *It);
-                // if (addSubtreeCounter2 != addSubtreeCounter) {
-                //     std::cerr << "FALI 2\n";
-                // }
+                bool addSubtreeCounter2 = Intersect3DTriangles(tr, *It);
+                if (addSubtreeCounter2 != addSubtreeCounter) {
+                    std::cerr << "FALI 2\n";
+                    std::terminate();
+                }
 
                 SubtreeCounter += addSubtreeCounter;
                 
@@ -122,7 +123,7 @@ int GetTriangles () {
             std::cout << i << std::endl;
         }
 
-    std::cout << j;
+    std::cout << '\n'<< j << '\n';
     // double maxCoord = mainRoot.getMaxCoor();
     
     return countIntersection;
@@ -535,9 +536,9 @@ namespace GeomObj
             double D = plane.d;
 
             return std::vector<double> { 
-                triangle.P0 * norm + D,
-                triangle.P1 * norm + D,
-                triangle.P2 * norm + D
+                (triangle.P0 * norm + D) / norm.length(),
+                (triangle.P1 * norm + D) / norm.length(),
+                (triangle.P2 * norm + D) / norm.length()
             };
         }
 
@@ -545,20 +546,20 @@ namespace GeomObj
 
         void SortTrianglePoint(std::vector<double>& distance, Triangle& triangle, Triangle& projection) {
             
-            if ((distance[0] <= 0.0 and distance[1] <= 0.0 and distance[2] > 0.0) or
-                (distance[0] >= 0.0 and distance[1] >= 0.0 and distance[2] < 0.0))
+            while (!((distance[0] <= 0.0 and distance[1] >= 0.0 and distance[2] >= 0.0) or
+                (distance[0] >= 0.0 and distance[1] <= 0.0 and distance[2] <= 0.0)))
             {
                 swap(distance[0],   distance[1],   distance[2],   rotate_t::left);
                 swap(triangle.P0,   triangle.P1,   triangle.P2,   rotate_t::left);
                 swap(projection.P0, projection.P1, projection.P2, rotate_t::left);
             }
-            else if ((distance[0] > 0.0 and distance[1] <= 0.0 and distance[2] <= 0.0) or
-                    (distance[0] < 0.0 and distance[1] >= 0.0 and distance[2] >= 0.0))
-            {
-                swap(distance[0],   distance[1],   distance[2],   rotate_t::right);
-                swap(triangle.P0,   triangle.P1,   triangle.P2,   rotate_t::right);
-                swap(projection.P0, projection.P1, projection.P2, rotate_t::right);
-            }
+            // else if ((distance[0] > 0.0 and distance[1] <= 0.0 and distance[2] <= 0.0) or
+            //         (distance[0] < 0.0 and distance[1] >= 0.0 and distance[2] >= 0.0))
+            // {
+            //     swap(distance[0],   distance[1],   distance[2],   rotate_t::right);
+            //     swap(triangle.P0,   triangle.P1,   triangle.P2,   rotate_t::right);
+            //     swap(projection.P0, projection.P1, projection.P2, rotate_t::right);
+            // }
         }
 
     //----------------------------------------------------------------------------------
@@ -570,8 +571,10 @@ namespace GeomObj
 
             SortTrianglePoint(distances, copy_tri, copy_proj);
 
-            const Vector P0 = projection.P0 + (projection.P1 - projection.P0) * distances[0] / (distances[0] - distances[1]);
-            const Vector P1 = projection.P2 + (projection.P1 - projection.P2) * distances[2] / (distances[2] - distances[1]);
+            //std::cout << copy_proj << '\n';
+
+            const Vector P0 = copy_proj.P0 + (copy_proj.P1 - copy_proj.P0) * std::abs(distances[0]) / (std::abs(distances[0]) + std::abs(distances[1]));
+            const Vector P1 = copy_proj.P0 + (copy_proj.P2 - copy_proj.P0) * std::abs(distances[0]) / (std::abs(distances[0]) + std::abs(distances[2]));
 
             return Segment {P0, P1};
         }
@@ -652,6 +655,32 @@ namespace GeomObj
                     max = value;
             }
         }
+
+
+        Segment MakeSegment(const Triangle& tri, const Line& line, const std::vector<double> dist) {
+            double proj[3] = {
+                line.direction * (tri.P0 - line.entry),
+                line.direction * (tri.P1 - line.entry),
+                line.direction * (tri.P2 - line.entry)
+            };
+
+            for (auto x: dist) {
+                std::cout << x << ' ';
+            }
+            std::cout << '\n';
+
+
+            double t0 = proj[0] + (proj[2] - proj[0]) * dist[0] / (dist[0] - dist[2]);
+            double t1 = proj[1] + (proj[2] - proj[1]) * dist[1] / (dist[1] - dist[2]);
+
+            std::cout << t0 << ' ' << t1 << '\n';
+
+            return Segment{
+                line.entry + t0 * line.direction,
+                line.entry + t1 * line.direction
+            };
+        }
+
     };
 };
             bool Intersect2DTriangles (const GeomObj::Triangle &tr1, const GeomObj::Triangle &tr2);
@@ -700,6 +729,11 @@ namespace GeomObj {
             }
 
 
+        for (auto x: first_distance) {
+            std::cout << x << " ";
+        }
+        std::cout << '\n';
+
         Line plane_intersection = LinePlaneIntersect(first, second);
 
         std::cout << "plane A: " << first_plane << ",\nplane B: " << second_plane << '\n';
@@ -708,15 +742,17 @@ namespace GeomObj {
         Triangle first_project  = ProjectionToLine(first, plane_intersection);
         Triangle second_project = ProjectionToLine(second, plane_intersection);
 
-        //std::cout << "plane A: " << first_project.status << ",\nplane B: " << second_project.status << '\n';
+        //std::cout << "plane A: " << first_project << ",\nplane B: " << second_project << '\n';
         //std::cout << Triangle::SEGMENT << '\n';
 
         Segment first_segment = CalcSegmentIntersect(first, first_distance, first_project);
-        Segment fs{first_project};
-        Segment ss{second_project};        
+        //Segment fs = MakeSegment(first, plane_intersection, first_distance);
+        //Segment ss = MakeSegment(second, plane_intersection, second_distance);  
         Segment second_segment = CalcSegmentIntersect(second, second_distance, second_project);
 
-        return IntersectDegenerates(fs, ss);//SegmentIntersect(fs, ss, plane_intersection);
+        //std::cout << first_segment << '\n' << second_segment << '\n';      
+
+        return IntersectDegenerates(first_segment, second_segment);//SegmentIntersect(fs, ss, plane_intersection);
     }
 
 };
@@ -782,7 +818,7 @@ using namespace GeomObj;
 
             double mixedProduct   = side * ::cross(beginPVec , (beginPVec - side));
 
-            if (isEqual (mixedProduct, 0.0) == 0) {
+            if (isEqual (mixedProduct, 0.0)) {
                 
                 Vector vectorPsOfTwoLines = IntersectionPointOfTwoLines (tri[(i + 1) % 3], side, beginPVec, cross, tri[i] - tri[(i + 1) % 3]) - tri[i];
 
@@ -839,20 +875,20 @@ using namespace GeomObj;
         for (int i = 0; i < 3; ++i)
             dists[i] = tr1 [i] * plain.normal () + plain.d;
 
-        if (isEqual ((dists[0] * dists[1]), 0) > 0)
-            if (isEqual ((dists[0] * dists[2]), 0) > 0)
+        if ((dists[0] * dists[1]) > 0)
+            if ((dists[0] * dists[2]) > 0)
                 return 0;
 
         for (int i = 0; i < 3; ++i) {
 
-            if( isEqual (dists[i], 0) == 0) {
-                if (isEqual ((dists[(i+1) % 3]) * (dists[(i+2) % 3]), 0) > 0) {
+            if( isEqual (dists[i], 0)) {
+                if ((dists[(i+1) % 3]) * (dists[(i+2) % 3]) > 0) {
                     return IntersectDegenerates (tr, tr1[i]); //one point in plane and another is from one side
-                } else if (isEqual (dists[(i+1) % 3], 0) == 0) {
+                } else if (isEqual (dists[(i+1) % 3], 0)) {
                     Segment seg(tr1[i], tr1[(i+1) % 3] - tr1[i]);
 
                     return IntersectDegenerates (tr, seg);
-                } else if (isEqual (dists[(i+2) % 3], 0) == 0) {
+                } else if (isEqual (dists[(i+2) % 3], 0)) {
                     Segment seg(tr1[i], tr1[(i+2) % 3] - tr1[i]);
 
                     return IntersectDegenerates (tr, seg);
@@ -907,9 +943,9 @@ using namespace GeomObj;
             double secondCalcDist   = CalcDist (normalV, dCoef, tr[ (1)]);
             double thirdCalcDist    = CalcDist (normalV, dCoef, tr[ (2)]);
             
-            if (isEqual (firstCalcDist * secondCalcDist, 0) > 0) 
+            if ( (firstCalcDist * secondCalcDist > 0)) 
                 outlaw = 2;
-            else if(isEqual (firstCalcDist * thirdCalcDist, 0)  > 0)
+            else if((firstCalcDist * thirdCalcDist >  0))
                 outlaw = 1;
             else 
                 outlaw = 0;
@@ -961,7 +997,7 @@ using namespace GeomObj;
 
         if (cross(firstPlane.normal(), secondPlane.normal()) == Vector{0,0,0}) {
 
-            if (isEqual(firstPlane.d, secondPlane.d) != 0)
+            if (!isEqual(firstPlane.d, secondPlane.d))
                 return false;
             
             return Intersect2DTriangles(tr1, tr2);
@@ -997,6 +1033,7 @@ using namespace GeomObj;
         ProjectEdges (firstProj, tr1, leadVec, commonP);
         double secondProj [3] = {};
         ProjectEdges (secondProj, tr2, leadVec, commonP);
+
 
         //now let's compute t_{0,i} params. Better watch GCT 578 page 
         double firstTParams [2] = {};
