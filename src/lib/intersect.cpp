@@ -60,8 +60,8 @@ namespace {
                 if (addCounter != addCounter2) {
                     std::cout << *ItSlow << '\n' << *ItFast << '\n';
                     std::cerr << "FAIL\n" <<
-                        "My func return " << std::boolalpha << addCounter << 
-                        " but Frolof func return " << addCounter2 << '\n';
+                       "My func return " << std::boolalpha << addCounter << 
+                       " but Frolof func return " << addCounter2 << '\n';
                         std::terminate();
                 }
                 
@@ -280,10 +280,10 @@ namespace GeomObj
         bool IntersectSegments(const Segment& segment_1, const Segment& segment_2) {
 
             Vector begin_1 = segment_1.begin;
-            Vector direct_1 = segment_1.end;
+            Vector direct_1 = segment_1.end - segment_1.begin;
 
             Vector begin_2 = segment_2.begin;
-            Vector direct_2 = segment_2.end;
+            Vector direct_2 = segment_2.end - segment_2.begin;
 
             Vector cross_vec  = cross(direct_1,direct_2);
             // Vector difVec = begin_2 - begin_1;
@@ -306,10 +306,10 @@ namespace GeomObj
                 return false;
             }
 
-            Vector a1 = direct_1 - begin_1;
-            Vector a2 = direct_2 - begin_2;
+            // Vector a1 = direct_1 - begin_1;
+            // Vector a2 = direct_2 - begin_2;
 
-            Vector interPoint = IntersectionPointOfTwoLines(begin_1, a1, begin_2, a2);
+            Vector interPoint = IntersectionPointOfTwoLines(begin_1, direct_1, begin_2, direct_2);
 
             return IntersectDegenerates(segment_1, interPoint) && IntersectDegenerates(segment_2, interPoint);
         }
@@ -468,21 +468,26 @@ namespace GeomObj
         {
             Line result;
 
-            const Vector& norm_1 = first.normal();
-            const Vector& norm_2 = second.normal();
+            Vector norm_1 = first.normal();
+            Vector norm_2 = second.normal();
 
             Vector direction = cross(norm_1, norm_2);
 
             result.direction = direction;
 
-            double s1 = first.d, s2 = second.d;
+            double s1 = -first.d, s2 = -second.d;
+            //std::cout << s1 << ' ' << s2 << '\n';
+
             double n1n2 = norm_1 * norm_2;
             double n1normsqr = norm_1 * norm_1;
             double n2normsqr = norm_2 * norm_2;
 
             double a = (s2 * n1n2 - s1 * n2normsqr) / ((n1n2 * n1n2) - n1normsqr * n2normsqr);
-            double b = (s1 * n1n2 - s2 * n2normsqr) / ((n1n2 * n1n2) - n1normsqr * n2normsqr);
-            result.entry = a * norm_2 + b * norm_1;
+            double b = (s1 * n1n2 - s2 * n1normsqr) / ((n1n2 * n1n2) - n1normsqr * n2normsqr);
+            result.entry = a * norm_1 + b * norm_2;
+           
+            //std::cout << a << ' ' << b << '\n';
+            //std::cout << result.entry << '\n';
 
             return result;
         }
@@ -525,7 +530,7 @@ namespace GeomObj
 
         std::vector<double> CalcDistance(const Triangle& triangle, const Plane& plane) {
             
-            Vector norm = plane.normal().normalize();
+            Vector norm = plane.normal();
                         
             double D = plane.d;
 
@@ -648,7 +653,6 @@ namespace GeomObj
             }
         }
     };
-
 };
             bool Intersect2DTriangles (const GeomObj::Triangle &tr1, const GeomObj::Triangle &tr2);
 
@@ -661,22 +665,23 @@ namespace GeomObj {
         }
 
         Plane first_plane {first}, second_plane {second};
+        // std::cout << "plane A: " << first_plane << ",\nplane B: " << second_plane << '\n';
+
 
         if (first_plane || second_plane) {
             
-            auto norminator = first_plane.a / second_plane.a;
-            second_plane *= norminator; 
             
-            if (!isEqual(first_plane.d, second_plane.d)) {
+            if (!isEqual(first_plane.a / first_plane.d, second_plane.a / second_plane.d)) {
                 return false;
             }
 
-            if (IntersectTriangles2D(first, second, first_plane.normal()) == true and 
-            Intersect2DTriangles(first, second) == false)
-            {
-                std::cout << first << '\n' << second;
-            }
-
+            // if (IntersectTriangles2D(first, second, first_plane.normal()) == true and 
+            // Intersect2DTriangles(first, second) == false)
+            // {
+            //     std::cout << first << '\n' << second;
+            // }
+            // std::cout << "plane A: " << first_plane << ",\nplane B: " << second_plane << '\n';
+            // puts("2d");
 
             return IntersectTriangles2D(first, second, first_plane.normal());
         }
@@ -694,15 +699,24 @@ namespace GeomObj {
                 return false;
             }
 
+
         Line plane_intersection = LinePlaneIntersect(first, second);
+
+        std::cout << "plane A: " << first_plane << ",\nplane B: " << second_plane << '\n';
+        //std::cout << plane_intersection << '\n';
 
         Triangle first_project  = ProjectionToLine(first, plane_intersection);
         Triangle second_project = ProjectionToLine(second, plane_intersection);
 
-        Segment first_segment  = CalcSegmentIntersect(first, first_distance, first_project);
+        //std::cout << "plane A: " << first_project.status << ",\nplane B: " << second_project.status << '\n';
+        //std::cout << Triangle::SEGMENT << '\n';
+
+        Segment first_segment = CalcSegmentIntersect(first, first_distance, first_project);
+        Segment fs{first_project};
+        Segment ss{second_project};        
         Segment second_segment = CalcSegmentIntersect(second, second_distance, second_project);
 
-        return SegmentIntersect(first_segment, second_segment, plane_intersection);
+        return IntersectDegenerates(fs, ss);//SegmentIntersect(fs, ss, plane_intersection);
     }
 
 };
@@ -953,7 +967,7 @@ using namespace GeomObj;
             return Intersect2DTriangles(tr1, tr2);
         }
 
-    //     //leading vector for the common lane
+        //     //leading vector for the common lane
         Vector leadVec = cross(firstPlane.normal(), secondPlane.normal());
         
         Vector commonP;

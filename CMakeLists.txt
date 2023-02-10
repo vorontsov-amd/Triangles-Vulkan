@@ -7,7 +7,7 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -O2 -Wall")
 
 include_directories("${PROJECT_SOURCE_DIR}/src/lib")
 
-add_library(${PROJECT_NAME}_lib STATIC src/lib/triangle.cpp src/lib/intersect.cpp src/lib/octree.cpp src/lib/vector.cpp src/lib/plane.cpp)
+add_library(${PROJECT_NAME}_lib STATIC src/lib/triangle.cpp src/lib/intersect.cpp src/lib/octree.cpp src/lib/vector.cpp src/lib/line.cpp src/lib/plane.cpp src/lib/segment.cpp)
 
 
 target_include_directories(${PROJECT_NAME}_lib PUBLIC ${PROJECT_SOURCE_DIR}/src/lib)
