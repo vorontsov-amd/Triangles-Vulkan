@@ -33,7 +33,7 @@ $ ./bin/triangle
 Test for triangles:
 
 ``` cmd
-$ ./bin/perfect
+$ ./bin/testTriangle
 ```
 
 ## Algorithm
