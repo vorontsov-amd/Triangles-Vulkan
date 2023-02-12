@@ -1,18 +1,10 @@
 project(testTriangle)
 
-
-#aux_source_directory(../triandles/src CPP_SOURCES)
-# aux_source_directory(./src CPP_SOURCES)
-
 file(GLOB CPP_SOURCES ../triangles/src/*.cpp)
 
 add_executable(${PROJECT_NAME} ${CPP_SOURCES} ./src/gtest.cpp)
-
 target_include_directories(${PROJECT_NAME} PRIVATE ../triangles/include)
-
 target_link_libraries(${PROJECT_NAME} gtest gmock pthread)
-
-# add_executable(${PROJECT_NAME} )
 
 add_definitions(-DPROJECT_DIR_PATH=\"${CMAKE_SOURCE_DIR}\")
 

@@ -1,141 +1,138 @@
 #include "intersect.hpp"
 #include "octree.hpp"
 #include <cassert>
-
-
-namespace {
-
-
-    void checkSubtree(Tree::OctreeNode* octree, GeomObj::Triangle &tr, std::vector<bool>& intersectTriangleFlagArray, int &SubtreeCounter) {
-
-        for (int i  = 0; i < 8; ++i) {
-            if (!octree->child[i])
-                continue;
-            
-            std::list <GeomObj::Triangle> List = octree->child[i]->listOfTriangles;
-            
-            for (Tree::OctreeNode::ListIt It = List.begin(); It != List.end(); ++It) {
-                bool addSubtreeCounter = GeomObj::IntersectTriangles(tr, *It);
-                SubtreeCounter += addSubtreeCounter;
-                
-                if(addSubtreeCounter) {
-                    intersectTriangleFlagArray[It->number] = true;
-                    intersectTriangleFlagArray[tr.number] = true;
-                }
-            }
-
-            checkSubtree(octree->child[i], tr, intersectTriangleFlagArray, SubtreeCounter);
-
-        }
-
-    }
-
-//-----------------------------------------------------------------------------------------------------
-
-    int IntersectionCounter (Tree::OctreeNode* octree, std::vector<bool>& intersectTriangleFlagArray) {
-
-        int counter = 0;
-
-        if (octree == nullptr) {
-            return counter;
-        }
-
-        std::list <GeomObj::Triangle> List = octree->listOfTriangles;
-        
-        for (Tree::OctreeNode::ListIt ItSlow = List.begin(); ItSlow != List.end(); ++ItSlow) {
-
-            Tree::OctreeNode::ListIt curIt = ItSlow;
-            ++curIt;
-            for (Tree::OctreeNode::ListIt ItFast = curIt; ItFast != List.end(); ++ItFast) {
-                bool addCounter = GeomObj::IntersectTriangles(*ItSlow, *ItFast);
-                counter += addCounter;
-
-                if(addCounter) {
-                    intersectTriangleFlagArray[ItFast->number] = true;
-                    intersectTriangleFlagArray[ItSlow->number] = true;
-                }
-            }
-
-            checkSubtree(octree, *ItSlow, intersectTriangleFlagArray, counter);
-            
-        }
-
-        for (int i = 0; i < 8; ++i) {
-            if (!(octree->child[i]))
-                continue;
-
-            counter += IntersectionCounter(octree->child[i], intersectTriangleFlagArray);
-
-        }
-        return counter;
-
-    }
-};
-
-//---------------------------------------------------------------------------------------------------------
-
-int GetTriangles () {
-
-    int countTriangles = 0;
-    std::cin >> countTriangles;
-    assert (std::cin.good());
-
-    Tree::Octree mainRoot {};
-
-    std::vector<GeomObj::Triangle> trianglesArr;
-    GeomObj::Triangle tr;
-    for (int i = 0; i < countTriangles; ++i) {
-        std::cin >> tr;
-        trianglesArr.push_back (tr);
-
-    }
-
-    mainRoot.push (trianglesArr);
-
-    std::vector<bool> intersectTriangleFlagArray(countTriangles);
-    int countIntersection = IntersectionCounter(mainRoot.getRoot(), intersectTriangleFlagArray);
-
-    int j = 0;
-    for (int i = 0; i < countTriangles; ++i)
-        if (intersectTriangleFlagArray[i]) {
-            j++;
-            std::cout << i << std::endl;
-        }
-
-    std::cout << '\n'<< j << '\n';
-    
-    return countIntersection;
-}
-
-
-//-----------------------------------------------------------------------------------
-
 #include "triangle.hpp"
 #include "segment.hpp"
 #include "line.hpp"
 #include "plane.hpp"
 
+
+namespace GeomObj {
+
+    namespace {
+
+        void checkSubtree(Tree::OctreeNode* octree, GeomObj::Triangle& tr, std::vector<bool>& intersectTriangleFlagArray, int& SubtreeCounter) {
+
+            for (int i  = 0; i < 8; ++i) {
+                if (!octree->child[i])
+                    continue;
+                
+                std::list <GeomObj::Triangle> List = octree->child[i]->listOfTriangles;
+                
+                for (Tree::OctreeNode::ListIt It = List.begin(); It != List.end(); ++It) {
+                    bool addSubtreeCounter = GeomObj::IntersectTriangles(tr, *It);
+                    SubtreeCounter += addSubtreeCounter;
+                    
+                    if(addSubtreeCounter) {
+                        intersectTriangleFlagArray[It->number] = true;
+                        intersectTriangleFlagArray[tr.number] = true;
+                    }
+                }
+
+                checkSubtree(octree->child[i], tr, intersectTriangleFlagArray, SubtreeCounter);
+
+            }
+
+        }
+
+    //-----------------------------------------------------------------------------------------------------
+
+        int IntersectionCounter (Tree::OctreeNode* octree, std::vector<bool>& intersectTriangleFlagArray) {
+
+            int counter = 0;
+
+            if (octree == nullptr) {
+                return counter;
+            }
+
+            std::list <GeomObj::Triangle> List = octree->listOfTriangles;
+            
+            for (Tree::OctreeNode::ListIt ItSlow = List.begin(); ItSlow != List.end(); ++ItSlow) {
+
+                Tree::OctreeNode::ListIt curIt = ItSlow;
+                ++curIt;
+                for (Tree::OctreeNode::ListIt ItFast = curIt; ItFast != List.end(); ++ItFast) {
+                    bool addCounter = GeomObj::IntersectTriangles(*ItSlow, *ItFast);
+                    counter += addCounter;
+
+                    if(addCounter) {
+                        intersectTriangleFlagArray[ItFast->number] = true;
+                        intersectTriangleFlagArray[ItSlow->number] = true;
+                    }
+                }
+
+                checkSubtree(octree, *ItSlow, intersectTriangleFlagArray, counter);
+                
+            }
+
+            for (int i = 0; i < 8; ++i) {
+                if (!(octree->child[i]))
+                    continue;
+
+                counter += IntersectionCounter(octree->child[i], intersectTriangleFlagArray);
+
+            }
+            return counter;
+
+        }
+    };
+
+    //---------------------------------------------------------------------------------------------------------
+
+    int GetTriangles() {
+
+        int countTriangles = 0;
+        std::cin >> countTriangles;
+        assert (std::cin.good());
+
+        Tree::Octree mainRoot {};
+
+        std::vector<GeomObj::Triangle> trianglesArr;
+        GeomObj::Triangle tr;
+        for (int i = 0; i < countTriangles; ++i) {
+            std::cin >> tr;
+            trianglesArr.push_back (tr);
+
+        }
+
+        mainRoot.push (trianglesArr);
+
+        std::vector<bool> intersectTriangleFlagArray(countTriangles);
+        int countIntersection = IntersectionCounter(mainRoot.getRoot(), intersectTriangleFlagArray);
+
+        for (int i = 0; i < countTriangles; ++i)
+            if (intersectTriangleFlagArray[i]) {
+                std::cout << i << std::endl;
+            }
+        
+        return countIntersection;
+    }
+};
+
+
+
+
 namespace GeomObj
 {
     namespace { 
 
-    std::vector<int> SquareMatrixLines(double matrix [][3], double column[]);
-    Vector IntersectionPointOfTwoLines(const Vector& begin_1, const Vector& direct_1, const Vector& begin_2, const Vector& direct_2);
-    bool CheckPointInSegment(const Vector& beginPVec, const Vector& directVec);
-    bool IntersectDegenerates(const Segment& segment, const Vector& point);
-    bool IntersectSegments(const Segment& segment_1, const Segment& segment_2);
-    bool IntersectDegenerates(const Segment& segment_1, const Segment& segment_2);
-    bool IntersectLineTriangle(const Triangle& tri, const Line& line, Vector& intersection, double& info);
-    bool IntersectDegenerates(const Triangle& tri, const Vector& point);
-    bool IntersectDegenerates(const Triangle& tri, const Segment& seg);
-    bool HandleDegeneratedCase(const Triangle& tr1, const Triangle& tr2, int degFlag);
-    bool IntersectTriangles2D(const Triangle& first, const Triangle& second, const Vector& normal);
-    Triangle ProjectionToLine(const Triangle& triangle, const Line& line);
-    std::vector<double> CalcDistance(const Triangle& triangle, const Plane& plane);
-    void SortTrianglePoint(std::vector<double>& distance, Triangle& triangle, Triangle& projection);
-    bool TestIntersection(const Triangle& C0, const Triangle& C1, component_t x, component_t y);
-    void ComputeInterval(const Triangle& triangle, const Vector& vec, double& min, double& max);
-    Segment CalcSegmentIntersect(const Triangle& triangle, std::vector<double>& distances, const Triangle& projection);
+        std::vector<int> SquareMatrixLines(double matrix [][3], double column[]);
+        Vector IntersectionPointOfTwoLines(const Vector& begin_1, const Vector& direct_1, const Vector& begin_2, const Vector& direct_2);
+        bool CheckPointInSegment(const Vector& beginPVec, const Vector& directVec);
+        bool IntersectDegenerates(const Segment& segment, const Vector& point);
+        bool IntersectSegments(const Segment& segment_1, const Segment& segment_2);
+        bool IntersectDegenerates(const Segment& segment_1, const Segment& segment_2);
+        bool IntersectLineTriangle(const Triangle& tri, const Line& line, Vector& intersection, double& info);
+        bool IntersectDegenerates(const Triangle& tri, const Vector& point);
+        bool IntersectDegenerates(const Triangle& tri, const Segment& seg);
+        bool HandleDegeneratedCase(const Triangle& tr1, const Triangle& tr2, int degFlag);
+        bool IntersectTriangles2D(const Triangle& first, const Triangle& second, const Vector& normal);
+        Triangle ProjectionToLine(const Triangle& triangle, const Line& line);
+        std::vector<double> CalcDistance(const Triangle& triangle, const Plane& plane);
+        void SortTrianglePoint(std::vector<double>& distance, Triangle& triangle, Triangle& projection);
+        bool TestIntersection(const Triangle& C0, const Triangle& C1, component_t x, component_t y);
+        void ComputeInterval(const Triangle& triangle, const Vector& vec, double& min, double& max);
+        Segment CalcSegmentIntersect(const Triangle& triangle, std::vector<double>& distances, const Triangle& projection);
 
     //---------------------------------------------------------------------------------- 
         std::vector<int> SquareMatrixLines(double matrix [][3], double column[]) {
