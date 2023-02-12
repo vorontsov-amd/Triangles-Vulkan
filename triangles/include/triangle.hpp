@@ -37,7 +37,7 @@ namespace GeomObj
         //------------------------------------------------------------------------------
 
         //Methods-----------------------------------------------------------------------
-        const Vector& operator[] (int num) const {
+        Vector& operator[] (int num) {
             switch (num)
             {
             case 0:
@@ -51,18 +51,8 @@ namespace GeomObj
             }
         }
 
-        Vector& operator[] (int num) {
-            switch (num)
-            {
-            case 0:
-                return P0;
-            case 1:
-                return P1;
-            case 2:
-                return P2;
-            default:
-                throw std::invalid_argument(std::to_string(num));
-            }
+        const Vector& operator[] (int num) const {
+            return const_cast<const Vector&> (const_cast<Triangle&>(*this)[num]);
         }
 
         double getAbsMaxCoord () const  {

@@ -95,7 +95,7 @@ namespace GeomObj {
 
         }
 
-        mainRoot.push (trianglesArr);
+        mainRoot.push(trianglesArr);
 
         std::vector<bool> intersectTriangleFlagArray(countTriangles);
         int countIntersection = IntersectionCounter(mainRoot.getRoot(), intersectTriangleFlagArray);
@@ -104,7 +104,7 @@ namespace GeomObj {
             if (intersectTriangleFlagArray[i]) {
                 std::cout << i << std::endl;
             }
-        
+
         return countIntersection;
     }
 };
@@ -366,7 +366,7 @@ namespace GeomObj
         
     //----------------------------------------------------------------------------------
 
-        bool HandleDegeneratedCase(const Triangle &tr1, const Triangle &tr2, int degFlag) {
+        bool HandleDegeneratedCase(const Triangle& tr1, const Triangle& tr2, int degFlag) {
 
             enum DEGENERATED_CASES {
                 TRIANGLE_AND_TRIANGLE = 0b10,

@@ -97,9 +97,7 @@ namespace GeomObj {
             return *this;
         }
 
-
-        const double& operator[] (int comp) const
-        {
+        double& operator[] (int comp) {
             switch (comp)
             {
             case component_t::x:
@@ -113,20 +111,10 @@ namespace GeomObj {
             }
         }
 
-        double& operator[] (int comp)
-        {
-            switch (comp)
-            {
-            case component_t::x:
-                return x;
-            case component_t::y:
-                return y;
-            case component_t::z:
-                return z;
-            default:
-                throw std::invalid_argument(std::to_string(comp));
-            }
+        const double& operator[] (int comp) const {
+            return const_cast<const double&> (const_cast<Vector&>(*this)[comp]);
         }
+
 
         //------------------------------------------------------------------------------
     };
