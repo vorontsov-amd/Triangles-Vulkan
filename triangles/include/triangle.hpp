@@ -27,7 +27,7 @@ namespace GeomObj
             if ((p0 == p1) and (p1 == p2) and (p2 == p0)) {
                 status = POINT;
             }
-            else if ((p0 != p1) and (p1 != p2) and (p2 != p0) and !isEqual(cross(P0, P1) * P2, 0)) {
+            else if ((p0 != p1) and (p1 != p2) and (p2 != p0) and !isEqual(cross(P0 - P2, P1 - P2).squareLength(), 0)) {
                 status = TRIANGLE;
             }
             else {

@@ -11,10 +11,10 @@ namespace Tree {
             for (int coordNum = 0; coordNum < 3; ++coordNum) {  
                 double mid = ((leftBorder + rightBorder) / 2.0)[coordNum];
 
-                if (isEqual(tmp[coordNum], mid) > 0) {
+                if (tmp[coordNum] > mid) {
                     chapter[vertexNum] |= 1 << coordNum;
                 }
-                else if (isEqual(tmp[coordNum], mid) == 0) {
+                else if (isEqual(tmp[coordNum], mid)) {
                     return -1;
                 }
             }

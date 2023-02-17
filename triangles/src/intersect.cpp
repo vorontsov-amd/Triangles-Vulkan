@@ -5,7 +5,7 @@
 #include "segment.hpp"
 #include "line.hpp"
 #include "plane.hpp"
-
+#include <chrono>
 
 namespace GeomObj {
 
@@ -17,8 +17,7 @@ namespace GeomObj {
                 if (!octree->child[i])
                     continue;
                 
-                std::list <GeomObj::Triangle> List = octree->child[i]->listOfTriangles;
-                
+                std::list<GeomObj::Triangle>& List = octree->child[i]->listOfTriangles;
                 for (Tree::OctreeNode::ListIt It = List.begin(); It != List.end(); ++It) {
                     bool addSubtreeCounter = GeomObj::IntersectTriangles(tr, *It);
                     SubtreeCounter += addSubtreeCounter;
@@ -45,8 +44,8 @@ namespace GeomObj {
                 return counter;
             }
 
-            std::list <GeomObj::Triangle> List = octree->listOfTriangles;
-            
+            std::list<GeomObj::Triangle>& List = octree->listOfTriangles;
+
             for (Tree::OctreeNode::ListIt ItSlow = List.begin(); ItSlow != List.end(); ++ItSlow) {
 
                 Tree::OctreeNode::ListIt curIt = ItSlow;
@@ -116,57 +115,50 @@ namespace GeomObj
 {
     namespace { 
 
-        std::vector<int> SquareMatrixLines(double matrix [][3], double column[]);
+        std::vector<int> SquareMatrixLines(Vector matrix [], double column[], double& det);
         Vector IntersectionPointOfTwoLines(const Vector& begin_1, const Vector& direct_1, const Vector& begin_2, const Vector& direct_2);
         bool CheckPointInSegment(const Vector& beginPVec, const Vector& directVec);
         bool IntersectDegenerates(const Segment& segment, const Vector& point);
         bool IntersectSegments(const Segment& segment_1, const Segment& segment_2);
         bool IntersectDegenerates(const Segment& segment_1, const Segment& segment_2);
-        bool IntersectLineTriangle(const Triangle& tri, const Line& line, Vector& intersection, double& info);
+        bool IntersectLineTriangle(const Triangle& tri, const Line& line, Vector& intersection, double& info, bool flag);
         bool IntersectDegenerates(const Triangle& tri, const Vector& point);
         bool IntersectDegenerates(const Triangle& tri, const Segment& seg);
         bool HandleDegeneratedCase(const Triangle& tr1, const Triangle& tr2, int degFlag);
         bool IntersectTriangles2D(const Triangle& first, const Triangle& second, const Vector& normal);
-        Triangle ProjectionToLine(const Triangle& triangle, const Line& line);
+        std::vector<Vector> ProjectionToLine(const Triangle& triangle, const Line& line);
         std::vector<double> CalcDistance(const Triangle& triangle, const Plane& plane);
-        void SortTrianglePoint(std::vector<double>& distance, Triangle& triangle, Triangle& projection);
+        std::tuple<int, int, int> SortTrianglePoint(std::vector<double>& distance, const Triangle& triangle, const std::vector<Vector>& projection);
         bool TestIntersection(const Triangle& C0, const Triangle& C1, component_t x, component_t y);
         void ComputeInterval(const Triangle& triangle, const Vector& vec, double& min, double& max);
-        Segment CalcSegmentIntersect(const Triangle& triangle, std::vector<double>& distances, const Triangle& projection);
+        Segment CalcSegmentIntersect(const Triangle& triangle, std::vector<double>& distances, const std::vector<Vector>& projection);
 
     //---------------------------------------------------------------------------------- 
-        std::vector<int> SquareMatrixLines(double matrix [][3], double column[]) {
-            // double tmp[3] = {0, 0, 0};
-
-            Vector line_0 = {matrix[0][0], matrix[0][1], matrix[0][2]};
-            Vector line_1 = {matrix[1][0], matrix[1][1], matrix[1][2]};
-            Vector line_2 = {matrix[2][0], matrix[2][1], matrix[2][2]};
-            Vector line_3 = {matrix[3][0], matrix[3][1], matrix[3][2]};
-
-
-            if (!isEqual(determinant(line_0, line_1, line_2), 0)) {
+        std::vector<int> SquareMatrixLines(Vector matrix[], double column[], double& det) {
+            if (!isEqual(det = determinant(matrix[0], matrix[1], matrix[2]), 0)) {
                 return {0, 1, 2};
             }
-            else if (!isEqual(determinant(line_1, line_2, line_3), 0)) {
+            else if (!isEqual(det = determinant(matrix[1], matrix[2], matrix[3]), 0)) {
                 return {1, 2, 3};
             }
-            else if (!isEqual(determinant(line_0, line_2, line_3), 0)) {
+            else if (!isEqual(det = determinant(matrix[0], matrix[2], matrix[3]), 0)) {
                 return {0, 2, 3};
             }
-            else {
+            else if (!isEqual(det = determinant(matrix[0], matrix[1], matrix[3]), 0)){
                 return {0, 1, 3};
             }
+            throw std::runtime_error{"Lines not intersect"};
         }
 
     //----------------------------------------------------------------------------------
 
         Vector IntersectionPointOfTwoLines(const Vector& begin_1, const Vector& direct_1, const Vector& begin_2, const Vector& direct_2) {
-            
-            double matrix[4][3] = {
+
+            Vector matrix[4] = {
                 {direct_1.y, -direct_1.x, 0},
                 {0, direct_1.z, -direct_1.y},
                 {direct_2.y, -direct_2.x, 0},
-                {0, direct_2.z, -direct_1.y}
+                {0, direct_2.z, -direct_2.y}
             };
 
             double column[4] = {
@@ -176,7 +168,8 @@ namespace GeomObj
                 direct_2.z * begin_2.y - direct_2.y * begin_2.z
             };
 
-            std::vector<int> lines = SquareMatrixLines(matrix, column);
+            double det_0 = 0;
+            std::vector<int> lines = SquareMatrixLines(matrix, column, det_0);
             
             Vector column_0 = {
                 matrix[lines[0]][0],
@@ -202,7 +195,6 @@ namespace GeomObj
                 column[lines[2]]
             };
 
-            double det_0 = determinant(column_0, column_1, column_2);
             double detX  = determinant(right_column, column_1, column_2);
             double detY  = determinant(column_0, right_column, column_2);
             double detZ  = determinant(column_0, column_1, right_column);
@@ -211,8 +203,7 @@ namespace GeomObj
             double y     = detY / det_0;
             double z     = detZ / det_0;
 
-            Vector ret{x, y, z};
-            return ret;
+            return {x, y, z};
         }
 
     //----------------------------------------------------------------------------------
@@ -304,7 +295,7 @@ namespace GeomObj
 
     //----------------------------------------------------------------------------------
 
-        bool IntersectLineTriangle(const Triangle& tri, const Line& line, Vector& intersection, double& info) {
+        bool IntersectLineTriangle(const Triangle& tri, const Line& line, Vector& intersection, double& info, bool isSegment) {
             
             Vector e1 = tri.P1 - tri.P0;
             Vector e2 = tri.P2 - tri.P0;
@@ -313,17 +304,20 @@ namespace GeomObj
             double tmp = p * e1;
 
             if (isEqual(tmp, 0)) {
-                Segment seg{line.entry, line.entry + line.direction};
-                Segment side;
+                if (isSegment) {
+                    Segment seg{line.entry, line.entry + line.direction};
+                    Segment side;
 
-                for (int i0 = 0, i1 = 2; i0 < 3; i1 = i0, i0++) {
-                    side.begin = tri[i0];
-                    side.end = tri[i1];
-                    if (IntersectDegenerates(side, seg)) {
-                        return true;
+                    for (int i0 = 0, i1 = 2; i0 < 3; i1 = i0, i0++) {
+                        side.begin = tri[i0];
+                        side.end = tri[i1];
+                        if (IntersectDegenerates(side, seg)) {
+                            return true;
+                        }
                     }
+                    return false;
                 }
-                return false;
+                return true;
             }
 
             tmp = 1 / tmp;
@@ -352,7 +346,7 @@ namespace GeomObj
             Line line {{0,0,0}, point};
             Vector intersect;
             double info = 0;
-            return (IntersectLineTriangle(tri, line, intersect, info)) and (intersect == point);
+            return (IntersectLineTriangle(tri, line, intersect, info, false)) and (intersect == point);
         }
 
     //----------------------------------------------------------------------------------
@@ -361,7 +355,7 @@ namespace GeomObj
             Line line {seg.begin, seg.end - seg.begin};
             Vector intersect;
             double info = 0;
-            return (IntersectLineTriangle(tri, line, intersect, info)) and (info <= 1);        
+            return (IntersectLineTriangle(tri, line, intersect, info, true)) and (info <= 1);        
         }
         
     //----------------------------------------------------------------------------------
@@ -484,12 +478,12 @@ namespace GeomObj
 
     //----------------------------------------------------------------------------------
 
-        Triangle ProjectionToLine(const Triangle& triangle, const Line& line) {
+        std::vector<Vector> ProjectionToLine(const Triangle& triangle, const Line& line) {
         
             Vector V1 = line.entry + triangle.P0.ProjectonTo(line.direction);
             Vector V2 = line.entry + triangle.P1.ProjectonTo(line.direction);
             Vector V3 = line.entry + triangle.P2.ProjectonTo(line.direction);
-            return Triangle {V1, V2, V3};
+            return {V1, V2, V3};
         }
 
     //----------------------------------------------------------------------------------
@@ -501,35 +495,44 @@ namespace GeomObj
             double D = plane.d;
 
             return std::vector<double> { 
-                (triangle.P0 * norm + D) / norm.length(),
-                (triangle.P1 * norm + D) / norm.length(),
-                (triangle.P2 * norm + D) / norm.length()
+                (triangle.P0 * norm + D),
+                (triangle.P1 * norm + D),
+                (triangle.P2 * norm + D)
             };
         }
 
     //----------------------------------------------------------------------------------
 
-        void SortTrianglePoint(std::vector<double>& distance, Triangle& triangle, Triangle& projection) {
-            while (!((distance[0] <= 0.0 and distance[1] >= 0.0 and distance[2] >= 0.0) or
-                (distance[0] >= 0.0 and distance[1] <= 0.0 and distance[2] <= 0.0)))
-            {
-                swap(distance[0],   distance[1],   distance[2],   rotate_t::left);
-                swap(triangle.P0,   triangle.P1,   triangle.P2,   rotate_t::left);
-                swap(projection.P0, projection.P1, projection.P2, rotate_t::left);
+        std::tuple<int, int, int> SortTrianglePoint(std::vector<double>& distance, const Triangle& triangle, const std::vector<Vector>& projection) {
+            int central = 0;
+            int left    = 1;
+            int right   = 2;
+
+            if (!((distance[central] <= 0.0 and distance[left] >= 0.0 and distance[right] >= 0.0) or
+                  (distance[central] >= 0.0 and distance[left] <= 0.0 and distance[right] <= 0.0))) {
+                    central = 1;
+                    left = 2;
+                    right = 0;
             }
+            
+
+            if (!((distance[central] <= 0.0 and distance[left] >= 0.0 and distance[right] >= 0.0) or
+                  (distance[central] >= 0.0 and distance[left] <= 0.0 and distance[right] <= 0.0))) {
+                    central = 2;
+                    left = 0;
+                    right = 1;
+            }
+
+            return std::make_tuple(central, left, right);
         }
 
     //----------------------------------------------------------------------------------
 
-        Segment CalcSegmentIntersect(const Triangle& triangle, std::vector<double>& distances, const Triangle& projection) {
-           
-            Triangle copy_tri = triangle;
-            Triangle copy_proj = projection;
+        Segment CalcSegmentIntersect(const Triangle& triangle, std::vector<double>& distances, const std::vector<Vector>& projection) {
+            auto [central, left, right] = SortTrianglePoint(distances, triangle, projection);
 
-            SortTrianglePoint(distances, copy_tri, copy_proj);
-
-            const Vector P0 = copy_proj.P0 + (copy_proj.P1 - copy_proj.P0) * std::abs(distances[0]) / (std::abs(distances[0]) + std::abs(distances[1]));
-            const Vector P1 = copy_proj.P0 + (copy_proj.P2 - copy_proj.P0) * std::abs(distances[0]) / (std::abs(distances[0]) + std::abs(distances[2]));
+            const Vector P0 = projection[central] + (projection[left] - projection[central]) * std::abs(distances[central]) / (std::abs(distances[central]) + std::abs(distances[left]));
+            const Vector P1 = projection[central] + (projection[right] - projection[central]) * std::abs(distances[central]) / (std::abs(distances[central]) + std::abs(distances[right]));
 
             return Segment {P0, P1};
         }
@@ -583,12 +586,12 @@ namespace GeomObj
     //----------------------------------------------------------------------------------
 
     };
-};
 
+};
 
 namespace GeomObj {
     bool IntersectTriangles(const Triangle& first, const Triangle& second) {
-        
+
         int degenereted_type = first.status + second.status;
         if (degenereted_type != 2) {
             return HandleDegeneratedCase(first, second, degenereted_type);
@@ -597,14 +600,11 @@ namespace GeomObj {
         Plane first_plane {first}, second_plane {second};
 
         if (first_plane || second_plane) {
-            
             if (!isEqual(first_plane.a / first_plane.d, second_plane.a / second_plane.d)) {
                 return false;
             }
-
             return IntersectTriangles2D(first, second, first_plane.normal());
         }
-
         auto first_distance = CalcDistance(first, second_plane);
         if ((first_distance[0] < 0 and first_distance[1] < 0 and first_distance[2] < 0) or
             (first_distance[0] > 0 and first_distance[1] > 0 and first_distance[2] > 0)) {
@@ -618,14 +618,14 @@ namespace GeomObj {
             }
 
         Line plane_intersection = LinePlaneIntersect(first, second);
-        
-        Triangle first_project  = ProjectionToLine(first, plane_intersection);
-        Triangle second_project = ProjectionToLine(second, plane_intersection);
+
+        auto first_project  = ProjectionToLine(first, plane_intersection);
+        auto second_project = ProjectionToLine(second, plane_intersection);
         
         Segment first_segment = CalcSegmentIntersect(first, first_distance, first_project);
         Segment second_segment = CalcSegmentIntersect(second, second_distance, second_project);
 
-        return IntersectSegments(first_segment, second_segment);//SegmentIntersect(fs, ss, plane_intersection);
+        return IntersectSegments(first_segment, second_segment);
     }
 
 };
