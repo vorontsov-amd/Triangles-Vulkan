@@ -6,8 +6,6 @@
 #include "line.hpp"
 #include "plane.hpp"
 #include <chrono>
-#include <unordered_map>
-#include <map>
 
 namespace GeomObj {
 
@@ -130,10 +128,10 @@ namespace GeomObj
         bool IntersectTriangles2D(const Triangle& first, const Triangle& second, const Vector& normal);
         std::vector<Vector> ProjectionToLine(const Triangle& triangle, const Line& line);
         std::vector<double> CalcDistance(const Triangle& triangle, const Plane& plane);
-        std::tuple<int, int, int> SortTrianglePoint(Line& line, const std::vector<Vector>& projection);
+        std::tuple<int, int, int> SortTrianglePoint(std::vector<double>& distance, const Triangle& triangle, const std::vector<Vector>& projection);
         bool TestIntersection(const Triangle& C0, const Triangle& C1, component_t x, component_t y);
         void ComputeInterval(const Triangle& triangle, const Vector& vec, double& min, double& max);
-        Segment CalcSegmentIntersect(Line& line, std::vector<double>& distances, const std::vector<Vector>& projection);
+        Segment CalcSegmentIntersect(const Triangle& triangle, std::vector<double>& distances, const std::vector<Vector>& projection);
 
     //---------------------------------------------------------------------------------- 
         std::vector<int> SquareMatrixLines(Vector matrix[], double column[], double& det) {
@@ -503,46 +501,74 @@ namespace GeomObj
             };
         }
 
-    //----------------------------------------------------------------------------------
 
-        std::tuple<int, int, int> SortTrianglePoint(Line& line, const std::vector<Vector>& projection) {
+        std::tuple<int, int, int> HandleNoTouchPoint(std::vector<double>& distance) {
+            for (int central = 0; central < 3; ++central) {
+                int left = (central + 1) % 3;
+                int right = (central + 2) % 3;
 
-            Triangle tr{projection[0], projection[1], projection[2]};
-            Segment seg{tr};
+                if ((distance[central] < 0.0 and distance[left] > 0.0 and distance[right] > 0.0) or
+                    (distance[central] > 0.0 and distance[left] < 0.0 and distance[right] < 0.0)) {
+                        return std::make_tuple(central, left, right);
+                }
+            }
 
-            std::vector<std::pair<double, int>> table(3);
-            
-            line.entry = seg.begin;
+            throw std::logic_error("triangle not intersect line or distance[i] == 0");
+        }
 
-            // std::vector<Vector> vectors {
-            //     (projection[0] - line.entry),
-            //     (projection[1] - line.entry),
-            //     (projection[2] - line.entry)
-            // };
 
-            // for (auto& vec: vectors) {
-            //     if (vec * line.direction < 0) {
-            //         line.entry += vec;
-            //     }
-            // }
-
-            table[0] = std::make_pair((projection[0] - line.entry).squareLength(), 0);
-            table[1] = std::make_pair((projection[1] - line.entry).squareLength(), 1);
-            table[2] = std::make_pair((projection[2] - line.entry).squareLength(), 2);
-
-            using pair_t = const std::pair<double, int>;
-
-            std::sort(table.begin(), table.end(), [](pair_t& lhs, pair_t& rhs) {
-                return rhs.first >= lhs.first;
+        std::tuple<int, int, int> HandleOneTouchPoint(std::vector<double>& distance) {
+            auto it = std::find_if(distance.begin(), distance.end(), [](double dist) {
+                return isEqual(dist, 0);
             });
 
-            return std::make_tuple(table[1].second, table[0].second, table[2].second);
+            int central = it - distance.begin();
+            int left = (central + 1) % 3;
+            int right = (central + 2) % 3;
+
+            return std::make_tuple(central, left, right);
+
+        }
+
+        std::tuple<int, int, int> HandleTwoTouchPoint(std::vector<double>& distance) {
+            auto it = std::find_if_not(distance.begin(), distance.end(), [](double dist) {
+                return isEqual(dist, 0);
+            });
+
+            int central = it - distance.begin();
+            int left = (central + 1) % 3;
+            int right = (central + 2) % 3;
+
+            return std::make_tuple(central, left, right);
+
+        }
+
+
+    //----------------------------------------------------------------------------------
+
+        std::tuple<int, int, int> SortTrianglePoint(std::vector<double>& distance, const Triangle& triangle, const std::vector<Vector>& projection) {
+
+            auto touch = std::count_if(distance.begin(), distance.end(), [](double dist) {
+                return isEqual(dist, 0);
+            });
+
+            switch (touch)
+            {
+            case 0:
+                return HandleNoTouchPoint(distance);
+            case 1:
+                return HandleOneTouchPoint(distance);
+            case 2:
+                return HandleTwoTouchPoint(distance);
+            default:
+                throw std::logic_error("point in triangle > 3");
+            }
         }
 
     //----------------------------------------------------------------------------------
 
-        Segment CalcSegmentIntersect(Line& line, std::vector<double>& distances, const std::vector<Vector>& projection) {
-            auto [central, left, right] = SortTrianglePoint(line, projection);
+        Segment CalcSegmentIntersect(const Triangle& triangle, std::vector<double>& distances, const std::vector<Vector>& projection) {
+            auto [central, left, right] = SortTrianglePoint(distances, triangle, projection);
 
             const Vector P0 = projection[central] + (projection[left] - projection[central]) * std::abs(distances[central]) / (std::abs(distances[central]) + std::abs(distances[left]));
             const Vector P1 = projection[central] + (projection[right] - projection[central]) * std::abs(distances[central]) / (std::abs(distances[central]) + std::abs(distances[right]));
@@ -636,10 +662,10 @@ namespace GeomObj {
 
         auto first_project  = ProjectionToLine(first, plane_intersection);
         auto second_project = ProjectionToLine(second, plane_intersection);
-
-        Segment first_segment = CalcSegmentIntersect(plane_intersection, first_distance, first_project);
-        Segment second_segment = CalcSegmentIntersect(plane_intersection, second_distance, second_project);
         
+        Segment first_segment = CalcSegmentIntersect(first, first_distance, first_project);
+        Segment second_segment = CalcSegmentIntersect(second, second_distance, second_project);
+
         return IntersectSegments(first_segment, second_segment);
     }
 
