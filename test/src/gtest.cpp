@@ -24,12 +24,53 @@ void TestBody (const std::string& path, int testNumber) {
 
     file >> first >> second >> result;
     
-    EXPECT_EQ(GeomObj::IntersectTriangles(first, second), result);
+    auto res = GeomObj::IntersectTriangles(first, second);
+    EXPECT_EQ(res, result);
     
-    std::cout << "test " << testNumber << " PASSED \n";
+    if (res) {
+        std::cout << "test " << testNumber << " PASSED \n";
+    }
+    else {
+        std::cout << "test " << testNumber << " FAILED \n";
+    }
 
     file.close();  
 }
+
+
+void TestBody2(const std::string& path, int testNumber) {
+
+    std::ifstream file(path);
+
+    if (!file.is_open()) {
+        std::cerr << "Problem with open file " << testNumber <<  "\n";
+        std::cerr << path << '\n';
+        std::cerr << "test FAILURE\n";
+        file.close();
+        return;
+    }
+
+    for (int i = 0; i < testNumber; ++i) {
+        GeomObj::Triangle first;
+        GeomObj::Triangle second;
+        bool result;
+
+        file >> first >> second >> result;
+        
+        auto res = GeomObj::IntersectTriangles(first, second);
+        EXPECT_EQ(res, result);
+        
+        if (res == result) {
+            std::cout << "test " << i << " PASSED \n";
+        }
+        else {
+            std::cout << "test " << i << " FAILED \n";
+        }
+    }
+    file.close();  
+}
+
+
 
 
 TEST(TestTriangles, TriangleXTriangle) {       
@@ -53,6 +94,16 @@ TEST(TestTriangles, TriangleXSegment) {
         ::TestBody(path, i);
     }
 }
+
+
+
+TEST(TestTriangles, TriangleXPoint) {       
+    const int NUMBER_OF_TEST = 3;
+    std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/trXpnt.txt";
+    ::TestBody2(path, NUMBER_OF_TEST);
+}
+
+
 
 TEST(TestTriangles, SegmentXSegment) {       
     const int NUMBER_OF_TEST = 8;
