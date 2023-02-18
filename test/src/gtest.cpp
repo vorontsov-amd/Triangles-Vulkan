@@ -27,7 +27,7 @@ void TestBody (const std::string& path, int testNumber) {
     auto res = GeomObj::IntersectTriangles(first, second);
     EXPECT_EQ(res, result);
     
-    if (res) {
+    if (res == result) {
         std::cout << "test " << testNumber << " PASSED \n";
     }
     else {
@@ -96,15 +96,6 @@ TEST(TestTriangles, TriangleXSegment) {
 }
 
 
-
-TEST(TestTriangles, TriangleXPoint) {       
-    const int NUMBER_OF_TEST = 3;
-    std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/trXpnt.txt";
-    ::TestBody2(path, NUMBER_OF_TEST);
-}
-
-
-
 TEST(TestTriangles, SegmentXSegment) {       
     const int NUMBER_OF_TEST = 8;
     
@@ -115,6 +106,30 @@ TEST(TestTriangles, SegmentXSegment) {
         ::TestBody(path, i);
     }
 }
+
+
+
+TEST(TestTriangles, TriangleXPoint) {       
+    const int NUMBER_OF_TEST = 3;
+    std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/trXpnt.txt";
+    ::TestBody2(path, NUMBER_OF_TEST);
+}
+
+
+TEST(TestTriangles, PointXPoint) {       
+    const int NUMBER_OF_TEST = 3;
+    std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/pntXpnt.txt";
+    ::TestBody2(path, NUMBER_OF_TEST);
+}
+
+
+TEST(TestTriangles, SegmentXPoint) {       
+    const int NUMBER_OF_TEST = 4;
+    std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/segXpnt.txt";
+    ::TestBody2(path, NUMBER_OF_TEST);
+}
+
+
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

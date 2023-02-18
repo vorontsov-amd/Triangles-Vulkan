@@ -312,6 +312,8 @@ namespace GeomObj
                         side.begin = tri[i0];
                         side.end = tri[i1];
                         if (IntersectDegenerates(side, seg)) {
+                            info = 1;
+                            intersection = line.entry + line.direction;
                             return true;
                         }
                     }
@@ -346,7 +348,7 @@ namespace GeomObj
             Line line {{0,0,0}, point};
             Vector intersect;
             double info = 0;
-            return (IntersectLineTriangle(tri, line, intersect, info, false)) and (intersect == point);
+            return (IntersectLineTriangle(tri, line, intersect, info, true)) and isEqual(info, 1);
         }
 
     //----------------------------------------------------------------------------------
@@ -374,7 +376,6 @@ namespace GeomObj
             switch (degFlag) {
 
                 case TRIANGLE_AND_POINT: {
-
                     if (tr1.status == Triangle::POINT) { //tr1 is a point
                         Vector point = tr1.P0;
                         return IntersectDegenerates(tr2, point);
@@ -526,8 +527,10 @@ namespace GeomObj
             int left = (central + 1) % 3;
             int right = (central + 2) % 3;
 
-            return std::make_tuple(central, left, right);
+            if ((distance[left] > 0 and distance[right] > 0) or (distance[left] < 0 and distance[right]))
+                return std::make_tuple(central, left, right);
 
+            else return std::make_tuple(left, right, central);
         }
 
         std::tuple<int, int, int> HandleTwoTouchPoint(std::vector<double>& distance) {
@@ -662,7 +665,7 @@ namespace GeomObj {
 
         auto first_project  = ProjectionToLine(first, plane_intersection);
         auto second_project = ProjectionToLine(second, plane_intersection);
-        
+
         Segment first_segment = CalcSegmentIntersect(first, first_distance, first_project);
         Segment second_segment = CalcSegmentIntersect(second, second_distance, second_project);
 
