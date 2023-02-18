@@ -6,6 +6,8 @@
 #include "line.hpp"
 #include "plane.hpp"
 #include <chrono>
+#include <unordered_map>
+#include <map>
 
 namespace GeomObj {
 
@@ -128,10 +130,10 @@ namespace GeomObj
         bool IntersectTriangles2D(const Triangle& first, const Triangle& second, const Vector& normal);
         std::vector<Vector> ProjectionToLine(const Triangle& triangle, const Line& line);
         std::vector<double> CalcDistance(const Triangle& triangle, const Plane& plane);
-        std::tuple<int, int, int> SortTrianglePoint(std::vector<double>& distance, const Triangle& triangle, const std::vector<Vector>& projection);
+        std::tuple<int, int, int> SortTrianglePoint(Line& line, const std::vector<Vector>& projection);
         bool TestIntersection(const Triangle& C0, const Triangle& C1, component_t x, component_t y);
         void ComputeInterval(const Triangle& triangle, const Vector& vec, double& min, double& max);
-        Segment CalcSegmentIntersect(const Triangle& triangle, std::vector<double>& distances, const std::vector<Vector>& projection);
+        Segment CalcSegmentIntersect(Line& line, std::vector<double>& distances, const std::vector<Vector>& projection);
 
     //---------------------------------------------------------------------------------- 
         std::vector<int> SquareMatrixLines(Vector matrix[], double column[], double& det) {
@@ -503,33 +505,39 @@ namespace GeomObj
 
     //----------------------------------------------------------------------------------
 
-        std::tuple<int, int, int> SortTrianglePoint(std::vector<double>& distance, const Triangle& triangle, const std::vector<Vector>& projection) {
-            int central = 0;
-            int left    = 1;
-            int right   = 2;
+        std::tuple<int, int, int> SortTrianglePoint(Line& line, const std::vector<Vector>& projection) {
 
-            if (!((distance[central] <= 0.0 and distance[left] >= 0.0 and distance[right] >= 0.0) or
-                  (distance[central] >= 0.0 and distance[left] <= 0.0 and distance[right] <= 0.0))) {
-                    central = 1;
-                    left = 2;
-                    right = 0;
-            }
+            std::vector<std::pair<double, int>> table(3);
             
+            std::vector<Vector> vectors {
+                (projection[0] - line.entry),
+                (projection[1] - line.entry),
+                (projection[2] - line.entry)
+            };
 
-            if (!((distance[central] <= 0.0 and distance[left] >= 0.0 and distance[right] >= 0.0) or
-                  (distance[central] >= 0.0 and distance[left] <= 0.0 and distance[right] <= 0.0))) {
-                    central = 2;
-                    left = 0;
-                    right = 1;
+            for (auto& vec: vectors) {
+                if (vec * line.direction < 0) {
+                    line.entry += vec;
+                }
             }
 
-            return std::make_tuple(central, left, right);
+            table[0] = std::make_pair((projection[0] - line.entry).squareLength(), 0);
+            table[1] = std::make_pair((projection[1] - line.entry).squareLength(), 1);
+            table[2] = std::make_pair((projection[2] - line.entry).squareLength(), 2);
+
+            using pair_t = const std::pair<double, int>;
+
+            std::sort(table.begin(), table.end(), [](pair_t& lhs, pair_t& rhs) {
+                return rhs.first > lhs.first;
+            });
+
+            return std::make_tuple(table[1].second, table[0].second, table[2].second);
         }
 
     //----------------------------------------------------------------------------------
 
-        Segment CalcSegmentIntersect(const Triangle& triangle, std::vector<double>& distances, const std::vector<Vector>& projection) {
-            auto [central, left, right] = SortTrianglePoint(distances, triangle, projection);
+        Segment CalcSegmentIntersect(Line& line, std::vector<double>& distances, const std::vector<Vector>& projection) {
+            auto [central, left, right] = SortTrianglePoint(line, projection);
 
             const Vector P0 = projection[central] + (projection[left] - projection[central]) * std::abs(distances[central]) / (std::abs(distances[central]) + std::abs(distances[left]));
             const Vector P1 = projection[central] + (projection[right] - projection[central]) * std::abs(distances[central]) / (std::abs(distances[central]) + std::abs(distances[right]));
@@ -600,7 +608,9 @@ namespace GeomObj {
         Plane first_plane {first}, second_plane {second};
 
         if (first_plane || second_plane) {
-            if (!isEqual(first_plane.a / first_plane.d, second_plane.a / second_plane.d)) {
+            double len_1 = first_plane.normal().length();
+            double len_2 = second_plane.normal().length();
+            if (!isEqual(first_plane.d / len_1, second_plane.d / len_2)) {
                 return false;
             }
             return IntersectTriangles2D(first, second, first_plane.normal());
@@ -621,10 +631,10 @@ namespace GeomObj {
 
         auto first_project  = ProjectionToLine(first, plane_intersection);
         auto second_project = ProjectionToLine(second, plane_intersection);
-        
-        Segment first_segment = CalcSegmentIntersect(first, first_distance, first_project);
-        Segment second_segment = CalcSegmentIntersect(second, second_distance, second_project);
 
+        Segment first_segment = CalcSegmentIntersect(plane_intersection, first_distance, first_project);
+        Segment second_segment = CalcSegmentIntersect(plane_intersection, second_distance, second_project);
+        
         return IntersectSegments(first_segment, second_segment);
     }
 
