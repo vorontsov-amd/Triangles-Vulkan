@@ -507,19 +507,24 @@ namespace GeomObj
 
         std::tuple<int, int, int> SortTrianglePoint(Line& line, const std::vector<Vector>& projection) {
 
+            Triangle tr{projection[0], projection[1], projection[2]};
+            Segment seg{tr};
+
             std::vector<std::pair<double, int>> table(3);
             
-            std::vector<Vector> vectors {
-                (projection[0] - line.entry),
-                (projection[1] - line.entry),
-                (projection[2] - line.entry)
-            };
+            line.entry = seg.begin;
 
-            for (auto& vec: vectors) {
-                if (vec * line.direction < 0) {
-                    line.entry += vec;
-                }
-            }
+            // std::vector<Vector> vectors {
+            //     (projection[0] - line.entry),
+            //     (projection[1] - line.entry),
+            //     (projection[2] - line.entry)
+            // };
+
+            // for (auto& vec: vectors) {
+            //     if (vec * line.direction < 0) {
+            //         line.entry += vec;
+            //     }
+            // }
 
             table[0] = std::make_pair((projection[0] - line.entry).squareLength(), 0);
             table[1] = std::make_pair((projection[1] - line.entry).squareLength(), 1);
@@ -528,7 +533,7 @@ namespace GeomObj
             using pair_t = const std::pair<double, int>;
 
             std::sort(table.begin(), table.end(), [](pair_t& lhs, pair_t& rhs) {
-                return rhs.first > lhs.first;
+                return rhs.first >= lhs.first;
             });
 
             return std::make_tuple(table[1].second, table[0].second, table[2].second);
