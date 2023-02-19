@@ -55,5 +55,5 @@ namespace GeomObj {
     };
 };
 
-std::ostream& operator<<(std::ostream& out, GeomObj::Segment& seg);
+std::ostream& operator<<(std::ostream& out, const GeomObj::Segment& seg);
 

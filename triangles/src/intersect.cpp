@@ -115,13 +115,19 @@ namespace GeomObj
 {
     namespace { 
 
+        enum IntersectType {
+            LINE, 
+            SEGMENT,
+            POINT
+        };
+
         std::vector<int> SquareMatrixLines(Vector matrix [], double column[], double& det);
         Vector IntersectionPointOfTwoLines(const Vector& begin_1, const Vector& direct_1, const Vector& begin_2, const Vector& direct_2);
         bool CheckPointInSegment(const Vector& beginPVec, const Vector& directVec);
         bool IntersectDegenerates(const Segment& segment, const Vector& point);
         bool IntersectSegments(const Segment& segment_1, const Segment& segment_2);
         bool IntersectDegenerates(const Segment& segment_1, const Segment& segment_2);
-        bool IntersectLineTriangle(const Triangle& tri, const Line& line, Vector& intersection, double& info, bool flag);
+        bool IntersectLineTriangle(const Triangle& tri, const Line& line, Vector& intersection, double& info, IntersectType flag);
         bool IntersectDegenerates(const Triangle& tri, const Vector& point);
         bool IntersectDegenerates(const Triangle& tri, const Segment& seg);
         bool HandleDegeneratedCase(const Triangle& tr1, const Triangle& tr2, int degFlag);
@@ -257,14 +263,14 @@ namespace GeomObj
 
                 if ((cross((begin_2 - begin_1), direct_1) == Vector{0,0,0}))
                 {
-                    if (IntersectDegenerates(segment_1, begin_2))
-                        return true;
-                    if (IntersectDegenerates(segment_1, begin_2 + direct_2))
-                        return true;
-                    if (IntersectDegenerates(segment_2, begin_1))
-                        return true;
-                    if (IntersectDegenerates(segment_2, begin_1 + direct_1))
-                        return true;
+                    if (IntersectDegenerates(segment_1, begin_2)) 
+                        return true; 
+                    if (IntersectDegenerates(segment_1, begin_2 + direct_2)) 
+                        return true; 
+                    if (IntersectDegenerates(segment_2, begin_1)) 
+                        return true; 
+                    if (IntersectDegenerates(segment_2, begin_1 + direct_1)) 
+                        return true; 
 
                     return false;
                 }
@@ -295,7 +301,8 @@ namespace GeomObj
 
     //----------------------------------------------------------------------------------
 
-        bool IntersectLineTriangle(const Triangle& tri, const Line& line, Vector& intersection, double& info, bool isSegment) {
+
+        bool IntersectLineTriangle(const Triangle& tri, const Line& line, Vector& intersection, double& info, IntersectType intType) {
             
             Vector e1 = tri.P1 - tri.P0;
             Vector e2 = tri.P2 - tri.P0;
@@ -304,22 +311,36 @@ namespace GeomObj
             double tmp = p * e1;
 
             if (isEqual(tmp, 0)) {
-                if (isSegment) {
+ 
+                switch (intType)
+                {
+                case LINE:
+                    return true;
+
+                case SEGMENT: {
                     Segment seg{line.entry, line.entry + line.direction};
                     Segment side;
 
                     for (int i0 = 0, i1 = 2; i0 < 3; i1 = i0, i0++) {
                         side.begin = tri[i0];
                         side.end = tri[i1];
-                        if (IntersectDegenerates(side, seg)) {
+                        if (IntersectDegenerates(side, seg)) {                                                        
                             info = 1;
                             intersection = line.entry + line.direction;
                             return true;
                         }
                     }
-                    return false;
+
+                    return IntersectDegenerates(tri, seg.begin) and IntersectDegenerates(tri, seg.end);
                 }
-                return true;
+                case POINT: {
+                    Line new_line {
+                        line.entry + cross(e1, e2),
+                        line.direction - cross(e1, e2),
+                    };
+                    return IntersectLineTriangle(tri, new_line, intersection, info, POINT);
+                }
+                };
             }
 
             tmp = 1 / tmp;
@@ -348,7 +369,7 @@ namespace GeomObj
             Line line {{0,0,0}, point};
             Vector intersect;
             double info = 0;
-            return (IntersectLineTriangle(tri, line, intersect, info, true)) and isEqual(info, 1);
+            return (IntersectLineTriangle(tri, line, intersect, info, POINT)) and isEqual(info, 1);
         }
 
     //----------------------------------------------------------------------------------
@@ -357,7 +378,7 @@ namespace GeomObj
             Line line {seg.begin, seg.end - seg.begin};
             Vector intersect;
             double info = 0;
-            return (IntersectLineTriangle(tri, line, intersect, info, true)) and (info <= 1);        
+            return (IntersectLineTriangle(tri, line, intersect, info, SEGMENT)) and (info <= 1);        
         }
         
     //----------------------------------------------------------------------------------
@@ -390,7 +411,6 @@ namespace GeomObj
                     return tr1.P0 == tr2.P0;
                 }
                 case TRIANGLE_AND_SEGMENT: {
-
                     if (tr1.status == Triangle::SEGMENT) { //tr1 is a segment
                         Segment seg{tr1};
                         return IntersectDegenerates(tr2, seg);
@@ -505,7 +525,7 @@ namespace GeomObj
 
         std::tuple<int, int, int> HandleNoTouchPoint(std::vector<double>& distance) {
             for (int central = 0; central < 3; ++central) {
-                int left = (central + 1) % 3;
+                int left  = (central + 1) % 3;
                 int right = (central + 2) % 3;
 
                 if ((distance[central] < 0.0 and distance[left] > 0.0 and distance[right] > 0.0) or
@@ -527,7 +547,7 @@ namespace GeomObj
             int left = (central + 1) % 3;
             int right = (central + 2) % 3;
 
-            if ((distance[left] > 0 and distance[right] > 0) or (distance[left] < 0 and distance[right]))
+            if ((distance[left] > 0 and distance[right] > 0) or (distance[left] < 0 and distance[right] < 0))
                 return std::make_tuple(central, left, right);
 
             else return std::make_tuple(left, right, central);

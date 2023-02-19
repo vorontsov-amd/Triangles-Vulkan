@@ -53,15 +53,15 @@ void TestBody2(const std::string& path, int testNumber) {
     for (int i = 0; i < testNumber; ++i) {
         GeomObj::Triangle first;
         GeomObj::Triangle second;
-        bool result;
+        bool expected_result;
 
-        file >> first >> second >> result;
+        file >> first >> second >> expected_result;
         
-        auto res = GeomObj::IntersectTriangles(first, second);
-        EXPECT_EQ(res, result);
+        auto recived_result = GeomObj::IntersectTriangles(first, second);
+        EXPECT_EQ(recived_result, expected_result);
         
-        if (res == result) {
-            std::cout << "test " << i << " PASSED \n";
+        if (recived_result == expected_result) {
+            //std::cout << "test " << i << " PASSED \n";
         }
         else {
             std::cout << "test " << i << " FAILED \n";
@@ -73,7 +73,7 @@ void TestBody2(const std::string& path, int testNumber) {
 
 
 
-TEST(TestTriangles, TriangleXTriangle) {       
+TEST(TestTriangles, TriangleXTriangleOld) {       
     const int NUMBER_OF_TEST = 8;
     
     for (int i = 1; i <= NUMBER_OF_TEST; ++i) {
@@ -84,7 +84,7 @@ TEST(TestTriangles, TriangleXTriangle) {
     }
 }
 
-TEST(TestTriangles, TriangleXSegment) {       
+TEST(TestTriangles, TriangleXSegmentOld) {       
     const int NUMBER_OF_TEST = 10;
     
     for (int i = 1; i <= NUMBER_OF_TEST; ++i) {
@@ -96,7 +96,7 @@ TEST(TestTriangles, TriangleXSegment) {
 }
 
 
-TEST(TestTriangles, SegmentXSegment) {       
+TEST(TestTriangles, SegmentXSegmentOld) {       
     const int NUMBER_OF_TEST = 8;
     
     for (int i = 1; i <= NUMBER_OF_TEST; ++i) {
@@ -116,6 +116,7 @@ TEST(TestTriangles, TriangleXPoint) {
 }
 
 
+
 TEST(TestTriangles, PointXPoint) {       
     const int NUMBER_OF_TEST = 3;
     std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/pntXpnt.txt";
@@ -126,6 +127,33 @@ TEST(TestTriangles, PointXPoint) {
 TEST(TestTriangles, SegmentXPoint) {       
     const int NUMBER_OF_TEST = 4;
     std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/segXpnt.txt";
+    ::TestBody2(path, NUMBER_OF_TEST);
+}
+
+
+
+TEST(TestTriangles, SegmentXSegment) {       
+    const int NUMBER_OF_TEST = 11;
+    std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/segXseg.txt";
+    ::TestBody2(path, NUMBER_OF_TEST);
+}
+
+
+TEST(TestTriangles, TriangleXSegment) {       
+    const int NUMBER_OF_TEST = 10;
+    std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/trXseg.txt";
+    ::TestBody2(path, NUMBER_OF_TEST);
+}
+
+TEST(TestTriangles, TriangleXTriangle2d) {       
+    const int NUMBER_OF_TEST = 6;
+    std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/trXtr2d.txt";
+    ::TestBody2(path, NUMBER_OF_TEST);
+}
+
+TEST(TestTriangles, TriangleXTriangle3d) {       
+    const int NUMBER_OF_TEST = 9;
+    std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/trXtr3d.txt";
     ::TestBody2(path, NUMBER_OF_TEST);
 }
 
