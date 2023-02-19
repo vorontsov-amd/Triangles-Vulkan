@@ -6,39 +6,7 @@
   #define PROJECT_DIR_PATH ""
 #endif
 
-void TestBody (const std::string& path, int testNumber) {
-
-    std::ifstream file(path);
-
-    if (!file.is_open()) {
-        std::cerr << "Problem with open file " << testNumber <<  "\n";
-        std::cerr << path << '\n';
-        std::cerr << "test " << testNumber << " FAILURE \n";
-        file.close();
-        return;
-    }
-
-    GeomObj::Triangle first;
-    GeomObj::Triangle second;
-    bool result;
-
-    file >> first >> second >> result;
-    
-    auto res = GeomObj::IntersectTriangles(first, second);
-    EXPECT_EQ(res, result);
-    
-    if (res == result) {
-        std::cout << "test " << testNumber << " PASSED \n";
-    }
-    else {
-        std::cout << "test " << testNumber << " FAILED \n";
-    }
-
-    file.close();  
-}
-
-
-void TestBody2(const std::string& path, int testNumber) {
+void TestBody(const std::string& path, int testNumber) {
 
     std::ifstream file(path);
 
@@ -60,10 +28,7 @@ void TestBody2(const std::string& path, int testNumber) {
         auto recived_result = GeomObj::IntersectTriangles(first, second);
         EXPECT_EQ(recived_result, expected_result);
         
-        if (recived_result == expected_result) {
-            //std::cout << "test " << i << " PASSED \n";
-        }
-        else {
+        if (recived_result != expected_result) {
             std::cout << "test " << i << " FAILED \n";
         }
     }
@@ -73,46 +38,10 @@ void TestBody2(const std::string& path, int testNumber) {
 
 
 
-TEST(TestTriangles, TriangleXTriangleOld) {       
-    const int NUMBER_OF_TEST = 8;
-    
-    for (int i = 1; i <= NUMBER_OF_TEST; ++i) {
-        std::string path = static_cast<std::string> (PROJECT_DIR_PATH)
-            + "/test/trXtr/test" + std::to_string(i) + ".txt";
-
-        ::TestBody(path, i);
-    }
-}
-
-TEST(TestTriangles, TriangleXSegmentOld) {       
-    const int NUMBER_OF_TEST = 10;
-    
-    for (int i = 1; i <= NUMBER_OF_TEST; ++i) {
-        std::string path = static_cast<std::string> (PROJECT_DIR_PATH)
-            + "/test/trXseg/test" + std::to_string(i) + ".txt";
-
-        ::TestBody(path, i);
-    }
-}
-
-
-TEST(TestTriangles, SegmentXSegmentOld) {       
-    const int NUMBER_OF_TEST = 8;
-    
-    for (int i = 1; i <= NUMBER_OF_TEST; ++i) {
-        std::string path = static_cast<std::string> (PROJECT_DIR_PATH)
-            + "/test/segXseg/test" + std::to_string(i) + ".txt";
-
-        ::TestBody(path, i);
-    }
-}
-
-
-
 TEST(TestTriangles, TriangleXPoint) {       
-    const int NUMBER_OF_TEST = 3;
+    const int NUMBER_OF_TEST = 4;
     std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/trXpnt.txt";
-    ::TestBody2(path, NUMBER_OF_TEST);
+    ::TestBody(path, NUMBER_OF_TEST);
 }
 
 
@@ -120,41 +49,41 @@ TEST(TestTriangles, TriangleXPoint) {
 TEST(TestTriangles, PointXPoint) {       
     const int NUMBER_OF_TEST = 3;
     std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/pntXpnt.txt";
-    ::TestBody2(path, NUMBER_OF_TEST);
+    ::TestBody(path, NUMBER_OF_TEST);
 }
 
 
 TEST(TestTriangles, SegmentXPoint) {       
-    const int NUMBER_OF_TEST = 4;
+    const int NUMBER_OF_TEST = 6;
     std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/segXpnt.txt";
-    ::TestBody2(path, NUMBER_OF_TEST);
+    ::TestBody(path, NUMBER_OF_TEST);
 }
 
 
 
 TEST(TestTriangles, SegmentXSegment) {       
-    const int NUMBER_OF_TEST = 11;
+    const int NUMBER_OF_TEST = 17;
     std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/segXseg.txt";
-    ::TestBody2(path, NUMBER_OF_TEST);
+    ::TestBody(path, NUMBER_OF_TEST);
 }
 
 
 TEST(TestTriangles, TriangleXSegment) {       
-    const int NUMBER_OF_TEST = 10;
+    const int NUMBER_OF_TEST = 19;
     std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/trXseg.txt";
-    ::TestBody2(path, NUMBER_OF_TEST);
+    ::TestBody(path, NUMBER_OF_TEST);
 }
 
 TEST(TestTriangles, TriangleXTriangle2d) {       
-    const int NUMBER_OF_TEST = 6;
+    const int NUMBER_OF_TEST = 9;
     std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/trXtr2d.txt";
-    ::TestBody2(path, NUMBER_OF_TEST);
+    ::TestBody(path, NUMBER_OF_TEST);
 }
 
 TEST(TestTriangles, TriangleXTriangle3d) {       
-    const int NUMBER_OF_TEST = 9;
+    const int NUMBER_OF_TEST = 15;
     std::string path = static_cast<std::string> (PROJECT_DIR_PATH) + "/test/trXtr3d.txt";
-    ::TestBody2(path, NUMBER_OF_TEST);
+    ::TestBody(path, NUMBER_OF_TEST);
 }
 
 

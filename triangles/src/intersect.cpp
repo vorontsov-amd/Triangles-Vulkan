@@ -330,9 +330,9 @@ namespace GeomObj
                             return true;
                         }
                     }
-
                     return IntersectDegenerates(tri, seg.begin) and IntersectDegenerates(tri, seg.end);
                 }
+                
                 case POINT: {
                     Line new_line {
                         line.entry + cross(e1, e2),
@@ -522,6 +522,8 @@ namespace GeomObj
             };
         }
 
+    //----------------------------------------------------------------------------------
+
 
         std::tuple<int, int, int> HandleNoTouchPoint(std::vector<double>& distance) {
             for (int central = 0; central < 3; ++central) {
@@ -537,6 +539,7 @@ namespace GeomObj
             throw std::logic_error("triangle not intersect line or distance[i] == 0");
         }
 
+    //----------------------------------------------------------------------------------
 
         std::tuple<int, int, int> HandleOneTouchPoint(std::vector<double>& distance) {
             auto it = std::find_if(distance.begin(), distance.end(), [](double dist) {
@@ -552,6 +555,9 @@ namespace GeomObj
 
             else return std::make_tuple(left, right, central);
         }
+
+    //----------------------------------------------------------------------------------
+
 
         std::tuple<int, int, int> HandleTwoTouchPoint(std::vector<double>& distance) {
             auto it = std::find_if_not(distance.begin(), distance.end(), [](double dist) {
