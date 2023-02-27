@@ -11,24 +11,9 @@ namespace GeomObj {
         //------------------------------------------------------------------------------
 
         //Constructors------------------------------------------------------------------
-        Plane(const Triangle& triangle) :
-            a{(triangle.P1.y - triangle.P0.y) * (triangle.P2.z - triangle.P0.z) - 
-              (triangle.P2.y - triangle.P0.y) * (triangle.P1.z - triangle.P0.z)},
-
-            b{-(triangle.P1.x - triangle.P0.x) * (triangle.P2.z - triangle.P0.z) +
-               (triangle.P2.x - triangle.P0.x) * (triangle.P1.z - triangle.P0.z)},
-    
-            c{(triangle.P1.x - triangle.P0.x) * (triangle.P2.y - triangle.P0.y) -
-              (triangle.P2.x - triangle.P0.x) * (triangle.P1.y - triangle.P0.y)},
-            
-            d{-(triangle.P0.x * a + triangle.P0.y * b + triangle.P0.z * c)} {
-
-                // if (d != 0) {
-                //     a /= d;
-                //     b /= d;
-                //     c /= d;
-                //     d  = 1;
-                // } 
+        Plane(const Triangle& triangle) {
+            auto normal = cross(triangle.P1 - triangle.P0, triangle.P2 - triangle.P0);
+            a = normal.x; b = normal.y; c = normal.z; d = - normal * triangle.P0;
         }  
         //------------------------------------------------------------------------------
 

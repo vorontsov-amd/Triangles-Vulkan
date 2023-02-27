@@ -11,69 +11,6 @@ namespace GeomObj {
 
     namespace {
 
-        void checkSubtree(Tree::OctreeNode* octree, GeomObj::Triangle& tr, std::vector<bool>& intersectTriangleFlagArray, int& SubtreeCounter) {
-
-            for (int i  = 0; i < 8; ++i) {
-                if (!octree->child[i])
-                    continue;
-                
-                std::list<GeomObj::Triangle>& List = octree->child[i]->listOfTriangles;
-                for (Tree::OctreeNode::ListIt It = List.begin(); It != List.end(); ++It) {
-                    bool addSubtreeCounter = GeomObj::IntersectTriangles(tr, *It);
-                    SubtreeCounter += addSubtreeCounter;
-                    
-                    if(addSubtreeCounter) {
-                        intersectTriangleFlagArray[It->number] = true;
-                        intersectTriangleFlagArray[tr.number] = true;
-                    }
-                }
-
-                checkSubtree(octree->child[i], tr, intersectTriangleFlagArray, SubtreeCounter);
-
-            }
-
-        }
-
-    //-----------------------------------------------------------------------------------------------------
-
-        int IntersectionCounter (Tree::OctreeNode* octree, std::vector<bool>& intersectTriangleFlagArray) {
-
-            int counter = 0;
-
-            if (octree == nullptr) {
-                return counter;
-            }
-
-            std::list<GeomObj::Triangle>& List = octree->listOfTriangles;
-
-            for (Tree::OctreeNode::ListIt ItSlow = List.begin(); ItSlow != List.end(); ++ItSlow) {
-
-                Tree::OctreeNode::ListIt curIt = ItSlow;
-                ++curIt;
-                for (Tree::OctreeNode::ListIt ItFast = curIt; ItFast != List.end(); ++ItFast) {
-                    bool addCounter = GeomObj::IntersectTriangles(*ItSlow, *ItFast);
-                    counter += addCounter;
-
-                    if(addCounter) {
-                        intersectTriangleFlagArray[ItFast->number] = true;
-                        intersectTriangleFlagArray[ItSlow->number] = true;
-                    }
-                }
-
-                checkSubtree(octree, *ItSlow, intersectTriangleFlagArray, counter);
-                
-            }
-
-            for (int i = 0; i < 8; ++i) {
-                if (!(octree->child[i]))
-                    continue;
-
-                counter += IntersectionCounter(octree->child[i], intersectTriangleFlagArray);
-
-            }
-            return counter;
-
-        }
     };
 
     //---------------------------------------------------------------------------------------------------------
@@ -97,7 +34,7 @@ namespace GeomObj {
         mainRoot.push(trianglesArr);
 
         std::vector<bool> intersectTriangleFlagArray(countTriangles);
-        int countIntersection = IntersectionCounter(mainRoot.getRoot(), intersectTriangleFlagArray);
+        int countIntersection = mainRoot.IntersectionCounter(intersectTriangleFlagArray);
 
         for (int i = 0; i < countTriangles; ++i)
             if (intersectTriangleFlagArray[i]) {
