@@ -413,7 +413,7 @@ namespace GeomObj
     //----------------------------------------------------------------------------------
 
         bool IntersectTriangles2D(const Triangle& first, const Triangle& second, const Vector& normal) {
-            auto max = AbsMaxCoordComponent(normal);
+            auto max = normal.maxCoordComponent();
 
             auto x = component_t::x, y = component_t::y;
 
@@ -550,7 +550,7 @@ namespace GeomObj
 
             for (int i0 = 0, i1 = 2; i0 < 3; i1 = i0, i0++) {
                 const Vector side = C0[i0] - C0[i1];
-                const Vector D = perp(side, x, y);
+                const Vector D = side.perp(x, y);
                 ComputeInterval(C0, D, min0, max0);
                 ComputeInterval(C1, D, min1, max1);
                 if (max1 < min0 || max0 < min1)
@@ -562,7 +562,7 @@ namespace GeomObj
             for (int i0 = 0, i1 = 2; i0 < 3; i1 = i0, i0++)
             {
                 Vector side = C1[i0] - C1[i1];
-                Vector D = perp(side, x, y);
+                Vector D = side.perp(x, y);
                 ComputeInterval(C0, D, min0, max0);
                 ComputeInterval(C1, D, min1, max1);
                 if (max1 < min0 || max0 < min1)

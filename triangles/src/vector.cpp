@@ -68,16 +68,4 @@ Vector cross(const Vector& left, const Vector& right) {
                     left.x * right.y - left.y * right.x };
 }
 
-Vector perp(const Vector& side, component_t x, component_t y) {
-    Vector res = {};
-    res[x] = side[y];
-    res[y] = -side[x];
-    return res;
-}
 
-component_t AbsMaxCoordComponent(const Vector& vec) {
-    const auto max = vec.getAbsMaxCoord();
-    if (isEqual(max, std::abs(vec.x))) return component_t::x;
-    else if (isEqual(max, std::abs(vec.y))) return component_t::y;
-    else return component_t::z;
-}

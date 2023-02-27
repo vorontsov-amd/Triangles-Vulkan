@@ -69,6 +69,13 @@ namespace GeomObj {
             return std::max({std::abs(x), std::abs(y), std::abs(z)});
         }
 
+        component_t maxCoordComponent() const {
+            const auto max = getAbsMaxCoord();
+            if (isEqual(max, std::abs(x))) return component_t::x;
+            else if (isEqual(max, std::abs(y))) return component_t::y;
+            else return component_t::z;
+        }
+
         Vector& operator/=(double num) {
             x /= num;
             y /= num;
@@ -115,6 +122,13 @@ namespace GeomObj {
             return const_cast<const double&> (const_cast<Vector&>(*this)[comp]);
         }
 
+
+        Vector perp(component_t x, component_t y) const {
+            Vector res = {};
+            res[x] =  operator[](y);
+            res[y] = -operator[](x);
+            return res;
+        }
 
         //------------------------------------------------------------------------------
     };

@@ -33,8 +33,7 @@ namespace Tree {
 
     void OctreeNode::createNewNode(int chapter) {
 
-        child[chapter] = std::make_unique<OctreeNode>();
-        child[chapter]->parent_ = this;
+        child_[chapter] = std::make_unique<OctreeNode>();
         
         GeomObj::Vector right = rightBorder_;
         GeomObj::Vector left  = leftBorder_;
@@ -42,12 +41,12 @@ namespace Tree {
 
         for(int i = 0; i < 3; ++i) {
             if((chapter >> i) & 1) {
-                child[chapter]->leftBorder_[i]  = mid[i];
-                child[chapter]->rightBorder_[i] = right[i];
+                child_[chapter]->leftBorder_[i]  = mid[i];
+                child_[chapter]->rightBorder_[i] = right[i];
             }
             else {
-                child[chapter]->leftBorder_[i]  = left[i];
-                child[chapter]->rightBorder_[i] = mid[i];
+                child_[chapter]->leftBorder_[i]  = left[i];
+                child_[chapter]->rightBorder_[i] = mid[i];
             }
         }
     }
@@ -55,38 +54,37 @@ namespace Tree {
 //-----------------------------------------------------------------------------------------------------
 
     void OctreeNode::siftTree() {
+
         if (listOfTriangles_.size() <= 2 || (rightBorder_ - leftBorder_).squareLength() < MINIMUM_SIZE) {
             return;
         }
 
         auto it = listOfTriangles_.begin();
         while (it != listOfTriangles_.end()) {
-            int chapter = whatChapter(leftBorder_, rightBorder_, *it);
 
+            int chapter = whatChapter(leftBorder_, rightBorder_, *it);
             if (chapter < 0) {
                 ++it;
                 continue;
             }
 
-            if (!child[chapter])
+            if (!child_[chapter])
                 createNewNode(chapter);
 
             auto tmp = it;
-
             if (it != listOfTriangles_.end())
                 tmp = next(it);
             
-            child[chapter]->listOfTriangles_.splice(child[chapter]->listOfTriangles_.begin(), listOfTriangles_, it);
-
+            child_[chapter]->listOfTriangles_.splice(child_[chapter]->listOfTriangles_.begin(), listOfTriangles_, it);
             it = tmp;
         }
 
         for (int i = 0; i < 8; ++i) {
-            if(!child[i]) {
+            if(!child_[i]) {
                 continue;
             }
 
-            child[i]->siftTree();
+            child_[i]->siftTree();
         }
     }
 
@@ -97,7 +95,7 @@ namespace Tree {
                 maxInTree       = 0;
 
         GeomObj::Triangle tmp;
-        for (size_t i = 0; i < triangles.size (); ++i) {
+        for (size_t i = 0; i < triangles.size(); ++i) {
 
             tmp = triangles[i];
             tmp.number = i;
@@ -110,38 +108,38 @@ namespace Tree {
         }
 
         rightBorder_    = {maxInTree, maxInTree, maxInTree};
-        leftBorder_     = GeomObj::Vector{0,0,0}-rightBorder_;
+        leftBorder_     = -rightBorder_;
 
         siftTree();
     }
 
-// //-----------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------
 
-//     void OctreeNode::dumpTree (OctreeNode& curRoot) {
-//         std::cout << "left = " << curRoot.leftBorder_ << "; right = " << curRoot.rightBorder_ << std::endl;
+    void OctreeNode::dumpTree() {
+        std::cout << "left = " << leftBorder_ << "; right = " << rightBorder_ << std::endl;
 
-//         for(auto v : curRoot.listOfTriangles)
-//             std::cout << v << std::endl;
+        for(auto v : listOfTriangles_)
+            std::cout << v << std::endl;
 
-//         std::cout << std::endl;
+        std::cout << std::endl;
 
-//         for (int i = 0; i < 8; ++i) {
-//             if(!curRoot.child[i])
-//                 continue;
+        for (int i = 0; i < 8; ++i) {
+            if(!child_[i])
+                continue;
 
-//             dumpTree (*(curRoot.child[i]));
-//         }
-//     }
+            child_[i]->dumpTree();
+        }
+    }
 
-
+//-----------------------------------------------------------------------------------------------------
 
     void OctreeNode::checkSubtree(GeomObj::Triangle& tr, std::vector<bool>& intersectTriangleFlagArray, int& SubtreeCounter) {
 
         for (int i = 0; i < 8; ++i) {
-            if (child[i] == nullptr)
+            if (child_[i] == nullptr)
                 continue;
             
-            auto triangles = child[i]->trianglesList();
+            auto triangles = child_[i]->trianglesList();
 
             for (auto It = triangles.begin(), end = triangles.end(); It != end; ++It) {
                 bool addSubtreeCounter = GeomObj::IntersectTriangles(tr, *It);
@@ -153,7 +151,7 @@ namespace Tree {
                 }
             }
 
-            child[i]->checkSubtree(tr, intersectTriangleFlagArray, SubtreeCounter);
+            child_[i]->checkSubtree(tr, intersectTriangleFlagArray, SubtreeCounter);
         }
 
     }
@@ -161,40 +159,37 @@ namespace Tree {
 
     //-----------------------------------------------------------------------------------------------------
 
-        int OctreeNode::IntersectionCounter(std::vector<bool>& intersectTriangleFlagArray) {
+    int OctreeNode::IntersectionCounter(std::vector<bool>& intersectTriangleFlagArray) {
 
-            int counter = 0;
+        int counter = 0;
 
-            auto tr = listOfTriangles_;
+        auto tr = listOfTriangles_;
 
-            for (auto ItSlow = tr.begin(), SlowEnd = tr.end(); ItSlow != SlowEnd; ++ItSlow) {
+        for (auto ItSlow = tr.begin(), SlowEnd = tr.end(); ItSlow != SlowEnd; ++ItSlow) {
 
-                auto curIt = ItSlow;
-                ++curIt;
-                for (auto ItFast = curIt, FastEnd = tr.end(); ItFast != FastEnd; ++ItFast) {
-                    bool addCounter = GeomObj::IntersectTriangles(*ItSlow, *ItFast);
-                    counter += addCounter;
+            auto curIt = ItSlow;
+            ++curIt;
+            for (auto ItFast = curIt, FastEnd = tr.end(); ItFast != FastEnd; ++ItFast) {
+                bool addCounter = GeomObj::IntersectTriangles(*ItSlow, *ItFast);
+                counter += addCounter;
 
-                    if(addCounter) {
-                        intersectTriangleFlagArray[ItFast->number] = true;
-                        intersectTriangleFlagArray[ItSlow->number] = true;
-                    }
+                if(addCounter) {
+                    intersectTriangleFlagArray[ItFast->number] = true;
+                    intersectTriangleFlagArray[ItSlow->number] = true;
                 }
-
-                checkSubtree(*ItSlow, intersectTriangleFlagArray, counter);
-                
             }
 
-            for (int i = 0; i < 8; ++i) {
-                if (!(child[i]))
-                    continue;
-
-                counter += child[i]->IntersectionCounter(intersectTriangleFlagArray);
-
-            }
-            return counter;
-
+            checkSubtree(*ItSlow, intersectTriangleFlagArray, counter);
         }
 
-    
+        for (int i = 0; i < 8; ++i) {
+            if (!(child_[i]))
+                continue;
+
+            counter += child_[i]->IntersectionCounter(intersectTriangleFlagArray);
+        }
+        return counter;
+
+    }
+
 }
