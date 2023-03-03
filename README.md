@@ -7,7 +7,7 @@ The following applications have to be installed:
 
 1. CMake 3.2 version (or higher)
 2. GTest
-3. g++
+3. c++ compiliter
 
 
 ## Compiling 
@@ -18,7 +18,7 @@ To compile each of the cache you need to use сmake in the directory build:
 $ mkdir build
 $ cd build
 $ сmake ..
-$ make all
+$ cmake --build
 ```
 
 ## Run the program:
