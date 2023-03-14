@@ -11,6 +11,5 @@ set(CMAKE_BUILD_TYPE RELEASE)
 add_subdirectory(3rd-party/glfw EXCLUDE_FROM_ALL)
 add_subdirectory(3rd-party/glm  EXCLUDE_FROM_ALL)
 
-add_subdirectory(triangles)
 add_subdirectory(test)
 add_subdirectory(vulkan)

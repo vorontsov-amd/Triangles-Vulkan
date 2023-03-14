@@ -26,9 +26,3 @@ target_link_libraries(${PROJECT_NAME} PRIVATE ${VULKAN_LIBRARIES})
 # target_link_libraries(${PROJECT_NAME} Vulkan::Vulkan)
 target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PRIVATE ${GLFW_INCLUDE_DIRS})
-
-
-
-install(TARGETS ${PROJECT_NAME}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        COMPONENT ${PROJECT_NAME})

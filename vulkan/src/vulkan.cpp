@@ -116,6 +116,15 @@ const std::vector<uint16_t> indices = {
     0, 1, 2, 2, 3, 0, 4
 };
 
+static glm::vec3 camera_pos (2.0f, 2.0f, 2.0f);
+static glm::vec3 camera_direction = glm::normalize (glm::vec3 {-2.0f, -2.0f, -2.0f});
+static glm::vec3 camera_up (0.0f, 0.0f, 1.0f);
+
+static double prev_x = 0.0;
+static double prev_y = 0.0;
+
+
+
 class HelloTriangleApplication {
 public:
     void run() {
@@ -211,12 +220,57 @@ private:
     }
 
     void mainLoop() {
+        glfwGetCursorPos(window, &prev_x, &prev_y);
         while (!glfwWindowShouldClose(window)) {
             glfwPollEvents();
+            glfwSetKeyCallback (window, key_callback);
+            glfwSetCursorPosCallback (window, cursor_position_callback);
             drawFrame();
         }
 
         vkDeviceWaitIdle(device);
+    }
+
+
+    static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+    {
+        float cam_speed = 0.02f;
+
+        if (key == GLFW_KEY_D) {
+
+            glm::vec3 tmp_vec = glm::normalize (glm::cross (camera_direction, camera_up)) * cam_speed;
+            camera_pos += tmp_vec;
+        }
+        else if (key == GLFW_KEY_A) {
+
+            glm::vec3 tmp_vec = glm::normalize (glm::cross (camera_direction, camera_up)) * cam_speed;
+            camera_pos -= tmp_vec;
+        }
+
+        if (key == GLFW_KEY_W)
+            camera_pos += glm::normalize (camera_direction) * cam_speed;
+        else if (key == GLFW_KEY_S)
+            camera_pos -= glm::normalize (camera_direction) * cam_speed;
+    }
+
+    static  void cursor_position_callback ( GLFWwindow * window, double xpos, double ypos)
+    {
+        static double phi = glm::radians (225.0f), ksi = glm::radians (-35.26f);
+
+        double delta_x = xpos - prev_x;
+        double delta_y = ypos - prev_y;
+
+        prev_x = xpos;
+        prev_y = ypos;
+
+        double sensivity = 0.001;
+
+        phi -= delta_x * sensivity;
+        ksi -= delta_y * sensivity;
+
+        camera_direction = glm::vec3 (glm::cos (ksi) * glm::cos (phi), glm::cos (ksi) * glm::sin (phi), glm::sin (ksi));
+
+
     }
 
     void cleanupSwapChain() {
@@ -981,7 +1035,7 @@ private:
 
         UniformBufferObject ubo{};
         ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.view = glm::lookAt (camera_pos, camera_pos + camera_direction, camera_up);
         ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f);
         ubo.proj[1][1] *= -1;
 
