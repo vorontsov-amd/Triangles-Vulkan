@@ -1255,7 +1255,7 @@ private:
     }
 };
 
-int main() {
+int run() {
     HelloTriangleApplication app;
 
     try {

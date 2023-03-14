@@ -43,9 +43,9 @@ namespace GeomObj {
                 std::cout << i << std::endl;
             }
 
-        return countIntersection;
-
         run();
+
+        return countIntersection;
     }
 };
 
