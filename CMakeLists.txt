@@ -9,3 +9,4 @@ set(CMAKE_BUILD_TYPE RELEASE)
 
 add_subdirectory(triangles)
 add_subdirectory(test)
+add_subdirectory(vulkan)
