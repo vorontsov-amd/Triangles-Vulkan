@@ -974,7 +974,7 @@ private:
         renderPassInfo.renderArea.offset = {0, 0};
         renderPassInfo.renderArea.extent = swapChainExtent;
 
-        VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
+        VkClearValue clearColor = {{{135.0 / 255.0, 206.0 / 255.0, 235.0 / 255.0, 1.0f}}};
         renderPassInfo.clearValueCount = 1;
         renderPassInfo.pClearValues = &clearColor;
 
@@ -1318,18 +1318,22 @@ private:
 };
 
 
-Vertex makeVertex(GeomObj::Triangle& tr, int ver) {
+Vertex makeVertex(GeomObj::Triangle& tr, int ver, bool flag) {
     auto vert = tr[ver];
+
+    auto&& blue = glm::vec3(0.0,0.0,1.0);
+    auto&& red  = glm::vec3(1.0,0.0,0.0);
 
     Vertex ret = {
         glm::vec3(vert.x, vert.y, vert.z),
-        glm::vec3(1.0,1.0,1.0)
     };
+
+    flag ? ret.color = red : ret.color = blue;
 
     return ret;
 }
 
-int run(std::vector<GeomObj::Triangle>& tr) {
+int run(std::vector<GeomObj::Triangle>& tr, std::vector<bool>& flag) {
     
     auto size = tr.size();
     indices.reserve(size * 3);
@@ -1340,9 +1344,9 @@ int run(std::vector<GeomObj::Triangle>& tr) {
     }
 
     for (int i = 0; i < size; ++i) {
-        Vertex firstVertex  = makeVertex(tr[i], 0);
-        Vertex secondVertex = makeVertex(tr[i], 1);
-        Vertex thirdVertex  = makeVertex(tr[i], 2);
+        Vertex firstVertex  = makeVertex(tr[i], 0, flag[i]);
+        Vertex secondVertex = makeVertex(tr[i], 1, flag[i]);
+        Vertex thirdVertex  = makeVertex(tr[i], 2, flag[i]);
         vertices.push_back (firstVertex);
         vertices.push_back (secondVertex);
         vertices.push_back (thirdVertex);
