@@ -17,10 +17,10 @@ set( EXEC_NAME "triangles" )
 find_package(Threads)
 
 
-add_subdirectory(3rdparty/glfw)
+add_subdirectory(3rd-party/glfw)
 include_directories(3rdparty/glfw/include)
 
-add_subdirectory(3rdparty/glm)
+add_subdirectory(3rd-party/glm)
 include_directories(3rdparty/glm)
 
 find_package(Vulkan REQUIRED)
