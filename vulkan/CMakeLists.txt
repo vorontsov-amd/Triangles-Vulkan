@@ -11,6 +11,12 @@ target_link_libraries(${PROJECT_NAME} Vulkan::Vulkan)
 target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PUBLIC ./include)
 
+
+set(VERT_SHADER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/shaders/vert.spv")
+set(FRAG_SHADER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/shaders/frag.spv")
+set(OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/include/sourcePath.h")
+configure_file(./include/sourcePath.h.in ${OUTPUT_PATH} @ONLY)
+
 install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         COMPONENT ${PROJECT_NAME})

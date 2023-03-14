@@ -18,6 +18,8 @@
 #include <array>
 #include <optional>
 #include <set>
+#include "triangle.hpp"
+#include "sourcePath.h"
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -70,7 +72,7 @@ struct SwapChainSupportDetails {
 };
 
 struct Vertex {
-    glm::vec2 pos;
+    glm::vec3 pos;
     glm::vec3 color;
 
     static VkVertexInputBindingDescription getBindingDescription() {
@@ -87,7 +89,7 @@ struct Vertex {
 
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
-        attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
         attributeDescriptions[0].offset = offsetof(Vertex, pos);
 
         attributeDescriptions[1].binding = 0;
@@ -105,16 +107,9 @@ struct UniformBufferObject {
     alignas(16) glm::mat4 proj;
 };
 
-const std::vector<Vertex> vertices = {
-    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}},
-};
+static std::vector<Vertex> vertices;
 
-const std::vector<uint16_t> indices = {
-    0, 1, 2, 2, 3, 0, 4
-};
+static std::vector<uint16_t> indices;
 
 static glm::vec3 camera_pos (2.0f, 2.0f, 2.0f);
 static glm::vec3 camera_direction = glm::normalize (glm::vec3 {-2.0f, -2.0f, -2.0f});
@@ -122,7 +117,7 @@ static glm::vec3 camera_up (0.0f, 0.0f, 1.0f);
 
 static double prev_x = 0.0;
 static double prev_y = 0.0;
-
+static bool lpress = false;
 
 
 class HelloTriangleApplication {
@@ -224,6 +219,7 @@ private:
         while (!glfwWindowShouldClose(window)) {
             glfwPollEvents();
             glfwSetKeyCallback (window, key_callback);
+            glfwSetMouseButtonCallback(window, mouse_button_callback);
             glfwSetCursorPosCallback (window, cursor_position_callback);
             drawFrame();
         }
@@ -231,10 +227,18 @@ private:
         vkDeviceWaitIdle(device);
     }
 
+    static void mouse_button_callback (GLFWwindow* window, 
+                                        int button, int action, int mods) noexcept {
+
+        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+            lpress = true;
+        else
+            lpress = false;
+    }
 
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
-        float cam_speed = 0.02f;
+        float cam_speed = 0.05f;
 
         if (key == GLFW_KEY_D) {
 
@@ -255,22 +259,25 @@ private:
 
     static  void cursor_position_callback ( GLFWwindow * window, double xpos, double ypos)
     {
-        static double phi = glm::radians (225.0f), ksi = glm::radians (-35.26f);
+        if (lpress) {
+            static double phi = glm::radians (225.0f), ksi = glm::radians (-35.26f);
 
-        double delta_x = xpos - prev_x;
-        double delta_y = ypos - prev_y;
+            double delta_x = xpos - prev_x;
+            double delta_y = ypos - prev_y;
 
-        prev_x = xpos;
-        prev_y = ypos;
+            prev_x = xpos;
+            prev_y = ypos;
 
-        double sensivity = 0.001;
+            double sensivity = 0.001;
 
-        phi -= delta_x * sensivity;
-        ksi -= delta_y * sensivity;
+            phi -= delta_x * sensivity;
+            ksi -= delta_y * sensivity;
 
-        camera_direction = glm::vec3 (glm::cos (ksi) * glm::cos (phi), glm::cos (ksi) * glm::sin (phi), glm::sin (ksi));
-
-
+            camera_direction = glm::vec3 (glm::cos (ksi) * glm::cos (phi), glm::cos (ksi) * glm::sin (phi), glm::sin (ksi));
+        } else {
+            prev_x = xpos;
+            prev_y = ypos;
+        }
     }
 
     void cleanupSwapChain() {
@@ -614,8 +621,8 @@ private:
     }
 
     void createGraphicsPipeline() {
-        auto vertShaderCode = readFile("shaders/vert.spv");
-        auto fragShaderCode = readFile("shaders/frag.spv");
+        auto vertShaderCode = readFile(VERT_SHADER_PATH);
+        auto fragShaderCode = readFile(FRAG_SHADER_PATH);
 
         VkShaderModule vertShaderModule = createShaderModule(vertShaderCode);
         VkShaderModule fragShaderModule = createShaderModule(fragShaderCode);
@@ -866,6 +873,7 @@ private:
     }
 
     void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) {
+        
         VkBufferCreateInfo bufferInfo{};
         bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         bufferInfo.size = size;
@@ -1034,9 +1042,9 @@ private:
         float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
         UniformBufferObject ubo{};
-        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.model = /*glm::rotate(*/glm::mat4(1.0f);/*, time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));*/
         ubo.view = glm::lookAt (camera_pos, camera_pos + camera_direction, camera_up);
-        ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f);
+        ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 100.0f);
         ubo.proj[1][1] *= -1;
 
         memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
@@ -1309,7 +1317,38 @@ private:
     }
 };
 
-int run() {
+
+Vertex makeVertex(GeomObj::Triangle& tr, int ver) {
+    auto vert = tr[ver];
+
+    Vertex ret = {
+        glm::vec3(vert.x, vert.y, vert.z),
+        glm::vec3(1.0,1.0,1.0)
+    };
+
+    return ret;
+}
+
+int run(std::vector<GeomObj::Triangle>& tr) {
+    
+    auto size = tr.size();
+    indices.reserve(size * 3);
+    vertices.reserve(size * 3);
+
+    for (int i = 0; i < size * 3; ++i) {
+        indices.push_back(i);
+    }
+
+    for (int i = 0; i < size; ++i) {
+        Vertex firstVertex  = makeVertex(tr[i], 0);
+        Vertex secondVertex = makeVertex(tr[i], 1);
+        Vertex thirdVertex  = makeVertex(tr[i], 2);
+        vertices.push_back (firstVertex);
+        vertices.push_back (secondVertex);
+        vertices.push_back (thirdVertex);
+    }
+    
+    
     HelloTriangleApplication app;
 
     try {
