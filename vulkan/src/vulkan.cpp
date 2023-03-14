@@ -238,7 +238,7 @@ private:
 
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
-        float cam_speed = 0.05f;
+        float cam_speed = 0.2f;
 
         if (key == GLFW_KEY_D) {
 
