@@ -7,7 +7,6 @@
 #include "plane.hpp"
 #include <chrono>
 
-int run(std::vector<GeomObj::Triangle>& tr, std::vector<bool>& flag);
 
 namespace GeomObj {
 
@@ -17,7 +16,7 @@ namespace GeomObj {
 
     //---------------------------------------------------------------------------------------------------------
 
-    int GetTriangles() {
+    std::pair<std::vector<Triangle>, std::vector<bool>> GetTriangles() {
 
         int countTriangles = 0;
         std::cin >> countTriangles;
@@ -36,16 +35,14 @@ namespace GeomObj {
         mainRoot.push(trianglesArr);
 
         std::vector<bool> intersectTriangleFlagArray(countTriangles);
-        int countIntersection = mainRoot.IntersectionCounter(intersectTriangleFlagArray);
+        mainRoot.IntersectionCounter(intersectTriangleFlagArray);
 
         for (int i = 0; i < countTriangles; ++i)
             if (intersectTriangleFlagArray[i]) {
                 std::cout << i << std::endl;
             }
 
-        run(trianglesArr, intersectTriangleFlagArray);
-
-        return countIntersection;
+        return std::make_pair(trianglesArr, intersectTriangleFlagArray);
     }
 };
 

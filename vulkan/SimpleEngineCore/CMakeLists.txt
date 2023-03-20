@@ -9,12 +9,14 @@ set(ENGINE_PUBLIC_INCLUDES
 	includes/SimpleEngineCore/Camera.hpp
 	includes/SimpleEngineCore/Keys.hpp
 	includes/SimpleEngineCore/Input.hpp
+	src/SimpleEngineCore/Rendering/Vulkan/VulkanRenderer.hpp
+	src/SimpleEngineCore/Rendering/Vulkan/VertexArray.hpp
+
 )
 
 set(ENGINE_PRIVATE_INCLUDES
 	src/SimpleEngineCore/Window.hpp
 	src/SimpleEngineCore/Modules/UIModule.hpp
-	src/SimpleEngineCore/Rendering/Vulkan/VulkanRenderer.hpp
 	src/SimpleEngineCore/sourcePath.h
 	src/SimpleEngineCore/sourcePath.h.in
 )

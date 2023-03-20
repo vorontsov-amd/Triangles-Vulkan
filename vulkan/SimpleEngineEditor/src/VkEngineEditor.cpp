@@ -5,6 +5,8 @@
 #include <SimpleEngineCore/Input.hpp>
 #include <SimpleEngineCore/Application.hpp>
 #include <imgui/imgui_internal.h>
+#include "intersect.hpp"
+#include "VertexArray.hpp"
 
 class SimpleEngineEditor : public SimpleEngine::Application
 {
@@ -16,6 +18,8 @@ class SimpleEngineEditor : public SimpleEngine::Application
     float camera_near_plane = 0.1f;
     float camera_far_plane = 100.f;
     bool perspective_camera = true;
+
+
 
     virtual void on_update() override
     {
@@ -204,8 +208,72 @@ class SimpleEngineEditor : public SimpleEngine::Application
     }
 
     int frame = 0;
-};
 
+
+    SimpleEngine::Vertex makeVertex(GeomObj::Triangle& tr, int ver, bool flag, bool back) {
+        auto vert = tr[ver];
+
+        auto&& blue = glm::vec3(0.0,0.0,1.0);
+        auto&& red  = glm::vec3(1.0,0.0,0.0);
+
+        SimpleEngine::Vertex ret = {
+            glm::vec3(vert.x, vert.y, vert.z),
+        };
+
+        flag ? ret.color = red : ret.color = blue;
+        back ? ret.color *= 0.5f : ret.color = ret.color; 
+
+        return ret;
+    }
+
+
+    public:
+        SimpleEngineEditor()
+        {
+            auto [tr, flag] = GeomObj::GetTriangles();
+
+            auto size = tr.size();
+            
+            SimpleEngine::VertexArray vertices;
+            SimpleEngine::IndexArray indices;
+            
+            indices.reserve(size * 3 * 2);
+            vertices.reserve(size * 3 * 2);
+
+            for (int i = 0; i < size * 3; ++i) {
+                indices.push_back(i);
+            }
+
+            for (int i = 0; i < size; ++i) {
+                SimpleEngine::Vertex firstVertex  = makeVertex(tr[i], 0, flag[i], false);
+                SimpleEngine::Vertex secondVertex = makeVertex(tr[i], 1, flag[i], false);
+                SimpleEngine::Vertex thirdVertex  = makeVertex(tr[i], 2, flag[i], false);
+                vertices.push_back(firstVertex);
+                vertices.push_back(secondVertex);
+                vertices.push_back(thirdVertex);
+            }
+
+            for (int i = size * 3; i < size * 3 * 2; ++i) {
+                indices.push_back(i);
+            }
+
+
+            for (int i = 0; i < size; ++i) {
+                SimpleEngine::Vertex firstVertex  = makeVertex(tr[i], 2, flag[i], true);
+                SimpleEngine::Vertex secondVertex = makeVertex(tr[i], 1, flag[i], true);
+                SimpleEngine::Vertex thirdVertex  = makeVertex(tr[i], 0, flag[i], true);
+                vertices.push_back(firstVertex);
+                vertices.push_back(secondVertex);
+                vertices.push_back(thirdVertex);
+            }
+
+            std::cout << vertices.size() << '\n';
+
+            setVerties(vertices);
+            setIndies(indices);
+
+        }
+};
 
 int main()
 {

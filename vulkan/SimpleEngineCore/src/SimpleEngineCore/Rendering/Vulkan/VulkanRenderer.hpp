@@ -5,11 +5,16 @@
 #include <vulkan/vulkan.hpp>
 #include "SimpleEngineCore/sourcePath.h"
 #include <glm/glm.hpp>
+// #include "SimpleEngineCore/Rendering/Vulkan/VertexArray.hpp"
+
+#include "SimpleEngineCore/Rendering/Vulkan/VertexArray.hpp"
+
+#include <iostream>
 
 namespace SimpleEngine {
-    class VertexArray;
     struct SwapChainSupportDetails;
     struct QueueFamilyIndices;
+
 
     class VulkanRenderer {
     public:        
@@ -17,6 +22,8 @@ namespace SimpleEngine {
         
         void init(GLFWwindow* pWindow) { window = pWindow; }
         void drawFrame(const glm::mat4& view, const glm::mat4& proj);
+        static void setVertexArray(VertexArray& array); 
+        static void setIndexArray(IndexArray& array); 
 
         // static void draw(const VertexArray& vertex_array);
         // static void set_clear_color(const float r, const float g, const float b, const float a);
@@ -29,7 +36,6 @@ namespace SimpleEngine {
         // static const char* get_renderer_str();
         // static const char* get_version_str();
     private:
-
         void createInstance();
         void setupDebugMessenger();
         void createSurface();
@@ -77,7 +83,6 @@ namespace SimpleEngine {
         QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
         std::vector<const char*> getRequiredExtensions();
         bool checkValidationLayerSupport();
-
 
         GLFWwindow* window;
 

@@ -2,11 +2,13 @@
 
 #include "SimpleEngineCore/Event.hpp"
 #include "SimpleEngineCore/Camera.hpp"
-
 #include <memory>
 
 namespace SimpleEngine {
 
+    struct Vertex;
+    using VertexArray = std::vector<Vertex>;
+    using IndexArray  = std::vector<uint16_t>;
     class VulkanRenderer;
 
     class Application
@@ -51,6 +53,10 @@ namespace SimpleEngine {
         
         EventDispatcher m_event_dispatcher;
         bool m_bCloseWindow = false;
+
+    protected:
+        void setVerties(VertexArray& array);
+        void setIndies(IndexArray& array);  
     };
 
 }
