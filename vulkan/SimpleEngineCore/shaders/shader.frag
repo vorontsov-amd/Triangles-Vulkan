@@ -1,14 +1,3 @@
-// #version 450
-
-// layout(location = 0) in vec3 fragColor;
-
-// layout(location = 0) out vec4 outColor;
-
-// void main() {
-//     outColor = vec4(fragColor, 1.0);
-// }
-
-
 #version 450
 
 layout(location = 0) in vec3 fragColor;
@@ -22,7 +11,7 @@ void main() {
     vec3 lightPos = vec3(1.0, 1.0, 1.0);
     vec3 lightColor = vec3(1.0, 1.0, 1.0);
 
-    float ambient_strength = 0.3;
+    float ambient_strength = 0.4;
     vec3 ambient = lightColor * ambient_strength;
 
     vec3 norm = normalize(Normal);
