@@ -1,13 +1,13 @@
 #pragma once
 
 #include <memory>
-#include "SimpleEngineCore/Window.hpp"
+#include "Window.hpp"
 #include <vulkan/vulkan.hpp>
-#include "SimpleEngineCore/sourcePath.h"
+#include "sourcePath.h"
 #include <glm/glm.hpp>
 // #include "SimpleEngineCore/Rendering/Vulkan/VertexArray.hpp"
 
-#include "SimpleEngineCore/Rendering/Vulkan/VertexArray.hpp"
+#include "Rendering/Vulkan/VertexArray.hpp"
 
 #include <iostream>
 

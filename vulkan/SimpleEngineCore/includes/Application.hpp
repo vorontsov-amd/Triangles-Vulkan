@@ -1,7 +1,7 @@
 #pragma once
 
-#include "SimpleEngineCore/Event.hpp"
-#include "SimpleEngineCore/Camera.hpp"
+#include "Event.hpp"
+#include "Camera.hpp"
 #include <memory>
 
 namespace SimpleEngine {

@@ -1,4 +1,4 @@
-#include "SimpleEngineCore/Camera.hpp"
+#include "Camera.hpp"
 
 #include <glm/trigonometric.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -50,10 +50,6 @@ namespace SimpleEngine {
         m_up = glm::cross(m_right, m_direction);
 
         m_view_matrix = glm::lookAt(m_position, m_position + m_direction, m_up);
-        
-        std::cout << m_position.x << ' ' << m_position.y << ' ' << m_position.z << '\n';
-        std::cout << m_direction.x << ' ' << m_direction.y << ' ' << m_direction.z << '\n';
-
     }
 
     void Camera::update_projection_matrix()

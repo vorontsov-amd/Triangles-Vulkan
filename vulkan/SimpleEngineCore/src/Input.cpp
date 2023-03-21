@@ -1,4 +1,4 @@
-#include "SimpleEngineCore/Input.hpp"
+#include "Input.hpp"
 #include <cstdlib>
 
 namespace SimpleEngine {

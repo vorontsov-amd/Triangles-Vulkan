@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SimpleEngineCore/Event.hpp"
+#include "Event.hpp"
 
 #include <string>
 #include <functional>

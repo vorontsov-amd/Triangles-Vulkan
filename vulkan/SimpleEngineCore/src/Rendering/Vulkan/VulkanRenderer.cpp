@@ -7,7 +7,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "SimpleEngineCore/Log.hpp"
+#include "Log.hpp"
 
 #include <imgui/backends/imgui_impl_vulkan.h>
 #include <iostream>
@@ -23,7 +23,6 @@
 #include <array>
 #include <optional>
 #include <set>
-#include "SimpleEngineCore/Modules/UIModule.hpp"
 
 namespace SimpleEngine {
 
@@ -73,26 +72,12 @@ namespace SimpleEngine {
     static std::vector<uint16_t> indices;
 
     void VulkanRenderer::setVertexArray(VertexArray& array) { 
-        std::cout << array.size() << '\n';
         std::copy(array.begin(), array.end(), std::back_inserter(vertices));
-        std::cout << vertices.size() << '\n';  
     }
     void VulkanRenderer::setIndexArray(IndexArray& array) {
         std::copy(array.begin(), array.end(), std::back_inserter(indices)); 
     }
-    // static std::vector<Vertex> vertices;
-    // static std::vector<uint16_t> indices;
 
-    // const std::vector<Vertex> vertices = {
-    //     {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-    //     {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-    //     {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}},
-    //     {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}}
-    // };
-
-    // const std::vector<uint16_t> indices = {
-    //     0, 1, 2, 2, 3, 0
-    // };
 
     void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks* pAllocator) {
         auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
@@ -156,8 +141,6 @@ namespace SimpleEngine {
 
         window = pWindow->m_pWindow;
 
-
-        std::cout << "create vulk " << vertices.size() << '\n';
         createInstance();
         setupDebugMessenger();
         createSurface();
@@ -929,9 +912,7 @@ namespace SimpleEngine {
     }
 
     void VulkanRenderer::createVertexBuffer() {
-        std::cout << vertices.size() << '\n';
         VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
-        std::cout << bufferSize << '\n';
 
         VkBuffer stagingBuffer;
         VkDeviceMemory stagingBufferMemory;

@@ -1,7 +1,6 @@
-#include "SimpleEngineCore/Window.hpp"
-#include "SimpleEngineCore/Log.hpp"
-#include "SimpleEngineCore/Modules/UIModule.hpp"
-#include "SimpleEngineCore/Rendering/Vulkan/VulkanRenderer.hpp"
+#include "Window.hpp"
+#include "Log.hpp"
+#include "Rendering/Vulkan/VulkanRenderer.hpp"
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -150,7 +149,6 @@ namespace SimpleEngine {
 
     void Window::shutdown()
     {
-        UIModule::on_window_close();
         glfwDestroyWindow(m_pWindow);
         glfwTerminate();
     }

@@ -3,32 +3,29 @@ cmake_minimum_required(VERSION 3.12)
 set(ENGINE_PROJECT_NAME SimpleEngineCore)
 
 set(ENGINE_PUBLIC_INCLUDES
-	includes/SimpleEngineCore/Application.hpp
-	includes/SimpleEngineCore/Log.hpp
-	includes/SimpleEngineCore/Event.hpp
-	includes/SimpleEngineCore/Camera.hpp
-	includes/SimpleEngineCore/Keys.hpp
-	includes/SimpleEngineCore/Input.hpp
-	src/SimpleEngineCore/Rendering/Vulkan/VulkanRenderer.hpp
-	src/SimpleEngineCore/Rendering/Vulkan/VertexArray.hpp
+	includes/Application.hpp
+	includes/Log.hpp
+	includes/Event.hpp
+	includes/Camera.hpp
+	includes/Keys.hpp
+	includes/Input.hpp
+	src/Rendering/Vulkan/VulkanRenderer.hpp
+	src/Rendering/Vulkan/VertexArray.hpp
 
 )
 
 set(ENGINE_PRIVATE_INCLUDES
-	src/SimpleEngineCore/Window.hpp
-	src/SimpleEngineCore/Modules/UIModule.hpp
-	src/SimpleEngineCore/sourcePath.h
-	src/SimpleEngineCore/sourcePath.h.in
+	src/Window.hpp
+	src/sourcePath.h
+	src/sourcePath.h.in
 )
 
 set(ENGINE_PRIVATE_SOURCES
-	src/SimpleEngineCore/Application.cpp
-	src/SimpleEngineCore/Window.cpp
-	src/SimpleEngineCore/Input.cpp
-	src/SimpleEngineCore/Modules/UIModule.cpp
-	src/SimpleEngineCore/Camera.cpp
-	src/SimpleEngineCore/Rendering/Vulkan/VulkanRenderer.cpp
-	src/SimpleEngineCore/Rendering/Vulkan/vulkan.cpp
+	src/Application.cpp
+	src/Window.cpp
+	src/Input.cpp
+	src/Camera.cpp
+	src/Rendering/Vulkan/VulkanRenderer.cpp
 )
 
 set(ENGINE_ALL_SOURCES
@@ -36,12 +33,6 @@ set(ENGINE_ALL_SOURCES
 	${ENGINE_PRIVATE_INCLUDES}
 	${ENGINE_PRIVATE_SOURCES}
 )
-
-# set(VERT_SHADER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/shaders/vert.spv")
-# set(FRAG_SHADER_PATH "${CMAKE_CURRENT_SOURCE_DIR}/shaders/frag.spv")
-# set(OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/src/SimpleEngineCore/sourcePath.h")
-# configure_file(./src/SimpleEngineCore/sourcePath.h.in ${OUTPUT_PATH} @ONLY)
-
 
 add_library(${ENGINE_PROJECT_NAME} STATIC
 	${ENGINE_ALL_SOURCES}
@@ -64,9 +55,6 @@ target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE glfw)
 
 add_subdirectory(../../3rd-party/spdlog ${CMAKE_CURRENT_BINARY_DIR}/spdlog)
 target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE spdlog)
-
-# add_subdirectory(../../3rd-party/glad ${CMAKE_CURRENT_BINARY_DIR}/glad)
-# target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE glad)
 
 add_subdirectory(../../3rd-party/glm ${CMAKE_CURRENT_BINARY_DIR}/glm)
 target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE glm)
