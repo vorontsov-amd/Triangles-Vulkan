@@ -75,7 +75,13 @@ set(IMGUI_INCLUDES
 	../../3rd-party/imgui/imgui.h
 	../../3rd-party/imgui/backends/imgui_impl_glfw.h
 	../../3rd-party/imgui/backends/imgui_impl_vulkan.h
+	../../3rd-party/imgui/imgui_internal.h
+	../../3rd-party/imgui/imconfig.h
+	../../3rd-party/imgui/imstb_rectpack.h
+	../../3rd-party/imgui/imstb_textedit.h
+	../../3rd-party/imgui/imstb_truetype.h
 )
+
 
 set(IMGUI_SOURCES
 	../../3rd-party/imgui/imgui.cpp

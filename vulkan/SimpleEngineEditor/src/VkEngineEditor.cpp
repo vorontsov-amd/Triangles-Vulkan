@@ -210,7 +210,7 @@ class SimpleEngineEditor : public SimpleEngine::Application
     int frame = 0;
 
 
-    SimpleEngine::Vertex makeVertex(GeomObj::Triangle& tr, int ver, bool flag, bool back) {
+    SimpleEngine::Vertex makeVertex(GeomObj::Triangle& tr, int ver, bool flag, GeomObj::Vector& normal) {
         auto vert = tr[ver];
 
         auto&& blue = glm::vec3(0.0,0.0,1.0);
@@ -221,7 +221,7 @@ class SimpleEngineEditor : public SimpleEngine::Application
         };
 
         flag ? ret.color = red : ret.color = blue;
-        back ? ret.color *= 0.5f : ret.color = ret.color; 
+        ret.normal = glm::vec3(normal.x, normal.y, normal.z);
 
         return ret;
     }
@@ -245,9 +245,12 @@ class SimpleEngineEditor : public SimpleEngine::Application
             }
 
             for (int i = 0; i < size; ++i) {
-                SimpleEngine::Vertex firstVertex  = makeVertex(tr[i], 0, flag[i], false);
-                SimpleEngine::Vertex secondVertex = makeVertex(tr[i], 1, flag[i], false);
-                SimpleEngine::Vertex thirdVertex  = makeVertex(tr[i], 2, flag[i], false);
+
+                auto normal = cross(tr[i][2] - tr[i][0], tr[i][1] - tr[i][0]); 
+
+                SimpleEngine::Vertex firstVertex  = makeVertex(tr[i], 0, flag[i], normal);
+                SimpleEngine::Vertex secondVertex = makeVertex(tr[i], 1, flag[i], normal);
+                SimpleEngine::Vertex thirdVertex  = makeVertex(tr[i], 2, flag[i], normal);
                 vertices.push_back(firstVertex);
                 vertices.push_back(secondVertex);
                 vertices.push_back(thirdVertex);
@@ -259,9 +262,12 @@ class SimpleEngineEditor : public SimpleEngine::Application
 
 
             for (int i = 0; i < size; ++i) {
-                SimpleEngine::Vertex firstVertex  = makeVertex(tr[i], 2, flag[i], true);
-                SimpleEngine::Vertex secondVertex = makeVertex(tr[i], 1, flag[i], true);
-                SimpleEngine::Vertex thirdVertex  = makeVertex(tr[i], 0, flag[i], true);
+
+                auto normal = -cross(tr[i][2] - tr[i][0], tr[i][1] - tr[i][0]); 
+
+                SimpleEngine::Vertex firstVertex  = makeVertex(tr[i], 2, flag[i], normal);
+                SimpleEngine::Vertex secondVertex = makeVertex(tr[i], 1, flag[i], normal);
+                SimpleEngine::Vertex thirdVertex  = makeVertex(tr[i], 0, flag[i], normal);
                 vertices.push_back(firstVertex);
                 vertices.push_back(secondVertex);
                 vertices.push_back(thirdVertex);

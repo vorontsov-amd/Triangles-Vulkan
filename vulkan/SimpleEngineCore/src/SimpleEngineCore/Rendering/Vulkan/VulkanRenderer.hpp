@@ -21,7 +21,7 @@ namespace SimpleEngine {
         VulkanRenderer(const std::unique_ptr<Window>& pWindow);
         
         void init(GLFWwindow* pWindow) { window = pWindow; }
-        void drawFrame(const glm::mat4& view, const glm::mat4& proj);
+        void drawFrame(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos);
         static void setVertexArray(VertexArray& array); 
         static void setIndexArray(IndexArray& array); 
 
@@ -72,7 +72,7 @@ namespace SimpleEngine {
         void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
         uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
         void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
-        void updateUniformBuffer(uint32_t currentImage, const glm::mat4& view, const glm::mat4& proj);
+        void updateUniformBuffer(uint32_t currentImage, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos);
         VkShaderModule createShaderModule(const std::vector<char>& code);
         VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
         VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
@@ -83,7 +83,10 @@ namespace SimpleEngine {
         QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
         std::vector<const char*> getRequiredExtensions();
         bool checkValidationLayerSupport();
+        void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+        VkCommandBuffer beginSingleTimeCommands();
 
+    public:
         GLFWwindow* window;
 
         EventDispatcher m_event_dispatcher;
@@ -106,7 +109,9 @@ namespace SimpleEngine {
         VkExtent2D swapChainExtent;
         std::vector<VkImageView> swapChainImageViews;
         std::vector<VkFramebuffer> swapChainFramebuffers;
+        int min_image_count;
 
+        VkRenderPass imguiPass;
         VkRenderPass renderPass;
         VkDescriptorSetLayout descriptorSetLayout;
         VkPipelineLayout pipelineLayout;
@@ -123,6 +128,7 @@ namespace SimpleEngine {
         std::vector<VkDeviceMemory> uniformBuffersMemory;
         std::vector<void*> uniformBuffersMapped;
 
+        VkDescriptorPool imguiPool;
         VkDescriptorPool descriptorPool;
         std::vector<VkDescriptorSet> descriptorSets;
 

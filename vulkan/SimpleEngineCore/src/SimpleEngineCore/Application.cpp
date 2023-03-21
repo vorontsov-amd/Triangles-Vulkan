@@ -316,7 +316,7 @@ namespace SimpleEngine {
         // UIModule::on_ui_draw_end(m_pRenderer->commandBuffers[m_pRenderer->currentFrame], m_pRenderer->graphicsPipeline);
 
         m_pWindow->on_update();
-        m_pRenderer->drawFrame(camera.get_view_matrix(), camera.get_projection_matrix());
+        m_pRenderer->drawFrame(camera.get_view_matrix(), camera.get_projection_matrix(), camera.get_position());
         on_update();
     }
 
