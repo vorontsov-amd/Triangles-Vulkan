@@ -1,3 +1,0 @@
-#pragma once
-#cmakedefine VERT_SHADER_PATH "@VERT_SHADER_PATH@"
-#cmakedefine FRAG_SHADER_PATH "@FRAG_SHADER_PATH@"
