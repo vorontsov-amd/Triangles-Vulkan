@@ -17,5 +17,5 @@ namespace SimpleEngine {
     private:
         static bool m_keys_pressed[];
         static bool m_mouse_buttons_pressed[];
-};
+    };
 }

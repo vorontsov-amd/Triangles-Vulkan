@@ -65,14 +65,9 @@ namespace SimpleEngine {
 
     struct EventMouseMoved : public BaseEvent
     {
-        EventMouseMoved(const double new_x, const double new_y)
-            : x(new_x)
-            , y(new_y)
-        {
-        }
+        EventMouseMoved(const double new_x, const double new_y) : x(new_x), y(new_y) {}
 
-        virtual EventType get_type() const override
-        {
+        virtual EventType get_type() const override {
             return type;
         }
 
@@ -84,14 +79,9 @@ namespace SimpleEngine {
 
     struct EventWindowResize : public BaseEvent
     {
-        EventWindowResize(const unsigned int new_width, const unsigned int new_height)
-            : width(new_width)
-            , height(new_height)
-        {
-        }
+        EventWindowResize(const unsigned int new_width, const unsigned int new_height) : width(new_width), height(new_height) {}
 
-        virtual EventType get_type() const override
-        {
+        virtual EventType get_type() const override {
             return type;
         }
 
@@ -103,8 +93,7 @@ namespace SimpleEngine {
 
     struct EventWindowClose : public BaseEvent
     {
-        virtual EventType get_type() const override
-        {
+        virtual EventType get_type() const override {
             return type;
         }
 
@@ -113,14 +102,9 @@ namespace SimpleEngine {
 
     struct EventKeyPressed : public BaseEvent
     {
-        EventKeyPressed(const KeyCode key_code, const bool repeated)
-            : key_code(key_code)
-            , repeated(repeated)
-        {
-        }
+        EventKeyPressed(const KeyCode key_code, const bool repeated) : key_code(key_code), repeated(repeated) {}
 
-        virtual EventType get_type() const override
-        {
+        virtual EventType get_type() const override {
             return type;
         }
 
@@ -132,13 +116,9 @@ namespace SimpleEngine {
 
     struct EventKeyReleased : public BaseEvent
     {
-        EventKeyReleased(const KeyCode key_code)
-            : key_code(key_code)
-        {
-        }
+        EventKeyReleased(const KeyCode key_code) : key_code(key_code) {}
 
-        virtual EventType get_type() const override
-        {
+        virtual EventType get_type() const override {
             return type;
         }
 
@@ -149,15 +129,12 @@ namespace SimpleEngine {
 
     struct EventMouseButtonPressed : public BaseEvent
     {
-        EventMouseButtonPressed(const MouseButton mouse_button, const double x_pos, const double y_pos)
-            : mouse_button(mouse_button)
-            , x_pos(x_pos)
-            , y_pos(y_pos)
-        {
-        }
+        EventMouseButtonPressed(const MouseButton mouse_button, const double x_pos, const double y_pos) : 
+            mouse_button(mouse_button),
+            x_pos(x_pos),
+            y_pos(y_pos) {}
 
-        virtual EventType get_type() const override
-        {
+        virtual EventType get_type() const override{
             return type;
         }
 
@@ -170,15 +147,12 @@ namespace SimpleEngine {
 
     struct EventMouseButtonReleased : public BaseEvent
     {
-        EventMouseButtonReleased(const MouseButton mouse_button, const double x_pos, const double y_pos)
-            : mouse_button(mouse_button)
-            , x_pos(x_pos)
-            , y_pos(y_pos)
-        {
-        }
+        EventMouseButtonReleased(const MouseButton mouse_button, const double x_pos, const double y_pos) : 
+            mouse_button(mouse_button),
+            x_pos(x_pos),
+            y_pos(y_pos) {}
 
-        virtual EventType get_type() const override
-        {
+        virtual EventType get_type() const override {
             return type;
         }
 
@@ -194,8 +168,7 @@ namespace SimpleEngine {
     {
         EventFramebufferResize(int w, int h) : width(w), height(h) {} 
         
-        virtual EventType get_type() const override
-        {
+        virtual EventType get_type() const override {
             return type;
         }
 

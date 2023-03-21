@@ -12,42 +12,36 @@ class SimpleEngineEditor : public SimpleEngine::Application
 {
     double m_initial_mouse_pos_x = 0.0;
     double m_initial_mouse_pos_y = 0.0;
-    float camera_position[3] = { 0.f, 0.f, 1.f };
-    float camera_rotation[3] = { 0.f, 0.f, 0.f };
-    float camera_fov = 60.f;
-    float camera_near_plane = 0.1f;
-    float camera_far_plane = 100.f;
-    bool perspective_camera = true;
-
-
+    float delta = 0.05f;    
 
     virtual void on_update() override
     {
         glm::vec3 movement_delta{ 0, 0, 0 };
         glm::vec3 rotation_delta{ 0, 0, 0 };
+
         if (SimpleEngine::Input::IsKeyPressed(SimpleEngine::KeyCode::KEY_W))
         {
-            movement_delta.x += 0.05f;
+            movement_delta.x += delta;
         }
         if (SimpleEngine::Input::IsKeyPressed(SimpleEngine::KeyCode::KEY_S))
         {
-            movement_delta.x -= 0.05f;
+            movement_delta.x -= delta;
         }
         if (SimpleEngine::Input::IsKeyPressed(SimpleEngine::KeyCode::KEY_A))
         {
-            movement_delta.y -= 0.05f;
+            movement_delta.y -= delta;
         }
         if (SimpleEngine::Input::IsKeyPressed(SimpleEngine::KeyCode::KEY_D))
         {
-            movement_delta.y += 0.05f;
+            movement_delta.y += delta;
         }
         if (SimpleEngine::Input::IsKeyPressed(SimpleEngine::KeyCode::KEY_E))
         {
-            movement_delta.z += 0.05f;
+            movement_delta.z += delta;
         }
         if (SimpleEngine::Input::IsKeyPressed(SimpleEngine::KeyCode::KEY_Q))
         {
-            movement_delta.z -= 0.05f;
+            movement_delta.z -= delta;
         }
 
         if (SimpleEngine::Input::IsKeyPressed(SimpleEngine::KeyCode::KEY_UP))
@@ -74,11 +68,17 @@ class SimpleEngineEditor : public SimpleEngine::Application
         {
             rotation_delta.x -= 0.5f;
         }
-        
-        if (SimpleEngine::Input::IsMouseButtonPressed(SimpleEngine::MouseButton::MOUSE_BUTTON_RIGHT))
+        if (SimpleEngine::Input::IsKeyPressed(SimpleEngine::KeyCode::KEY_LEFT_SHIFT))
+        {
+            delta = 0.1f;
+        } else {
+            delta = 0.05f;
+        }
+
+        if (SimpleEngine::Input::IsMouseButtonPressed(SimpleEngine::MouseButton::MOUSE_BUTTON_LEFT))
         {
             glm::vec2 current_cursor_position = get_current_cursor_position();
-            if (SimpleEngine::Input::IsMouseButtonPressed(SimpleEngine::MouseButton::MOUSE_BUTTON_LEFT))
+            if (SimpleEngine::Input::IsMouseButtonPressed(SimpleEngine::MouseButton::MOUSE_BUTTON_RIGHT))
             {
                 camera.move_right(static_cast<float>(current_cursor_position.x - m_initial_mouse_pos_x) / 100.f);
                 camera.move_up(static_cast<float>(m_initial_mouse_pos_y - current_cursor_position.y) / 100.f);
@@ -109,8 +109,8 @@ class SimpleEngineEditor : public SimpleEngine::Application
     SimpleEngine::Vertex makeVertex(GeomObj::Triangle& tr, int ver, bool flag, GeomObj::Vector& normal) {
         auto vert = tr[ver];
 
-        auto&& blue = glm::vec3(0.0,0.0,1.0);
-        auto&& red  = glm::vec3(1.0,0.0,0.0);
+        auto blue = glm::vec3(0.0,0.0,1.0);
+        auto red  = glm::vec3(1.0,0.0,0.0);
 
         SimpleEngine::Vertex ret = {
             glm::vec3(vert.x, vert.y, vert.z),
@@ -124,6 +124,7 @@ class SimpleEngineEditor : public SimpleEngine::Application
 
 
     public:
+
         SimpleEngineEditor()
         {
             auto [tr, flag] = GeomObj::GetTriangles();
@@ -136,12 +137,11 @@ class SimpleEngineEditor : public SimpleEngine::Application
             indices.reserve(size * 3 * 2);
             vertices.reserve(size * 3 * 2);
 
-            for (int i = 0; i < size * 3; ++i) {
+            for (auto i = 0UL; i < size * 3; ++i) {
                 indices.push_back(i);
             }
 
-            for (int i = 0; i < size; ++i) {
-
+            for (auto i = 0UL; i < size; ++i) {
                 auto normal = cross(tr[i][2] - tr[i][0], tr[i][1] - tr[i][0]); 
 
                 SimpleEngine::Vertex firstVertex  = makeVertex(tr[i], 0, flag[i], normal);
@@ -152,13 +152,11 @@ class SimpleEngineEditor : public SimpleEngine::Application
                 vertices.push_back(thirdVertex);
             }
 
-            for (int i = size * 3; i < size * 3 * 2; ++i) {
+            for (auto i = size * 3; i < size * 3 * 2; ++i) {
                 indices.push_back(i);
             }
 
-
-            for (int i = 0; i < size; ++i) {
-
+            for (auto i = 0UL; i < size; ++i) {
                 auto normal = cross(tr[i][1] - tr[i][0], tr[i][2] - tr[i][0]); 
 
                 SimpleEngine::Vertex firstVertex  = makeVertex(tr[i], 2, flag[i], normal);
@@ -169,9 +167,8 @@ class SimpleEngineEditor : public SimpleEngine::Application
                 vertices.push_back(thirdVertex);
             }
 
-            setVerties(vertices);
-            setIndies(indices);
-
+            setVertexArray(vertices);
+            setIndexArray(indices);
         }
 };
 

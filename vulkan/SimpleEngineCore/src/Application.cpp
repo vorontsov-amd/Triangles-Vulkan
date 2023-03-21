@@ -3,14 +3,7 @@
 #include "Window.hpp"
 #include "Event.hpp"
 #include "Input.hpp"
-
-// #include "SimpleEngineCore/Rendering/OpenGL/ShaderProgram.hpp"
-// #include "SimpleEngineCore/Rendering/OpenGL/VertexBuffer.hpp"
-// #include "SimpleEngineCore/Rendering/OpenGL/VertexArray.hpp"
-// #include "SimpleEngineCore/Rendering/OpenGL/IndexBuffer.hpp"
-// #include "SimpleEngineCore/Rendering/OpenGL/Texture2D.hpp"
 #include "Camera.hpp"
-// #include "SimpleEngineCore/Rendering/OpenGL/Renderer_OpenGL.hpp"
 #include "Rendering/Vulkan/VulkanRenderer.hpp"
 
 #include <imgui/imgui.h>
@@ -24,9 +17,9 @@
 
 
 namespace SimpleEngine {
-    void Application::setVerties(VertexArray& array) { VulkanRenderer::setVertexArray(array); }
+    void Application::setVertexArray(VertexArray& array) { VulkanRenderer::setVertexArray(array); }
 
-    void Application::setIndies(IndexArray& array) { VulkanRenderer::setIndexArray(array); }
+    void Application::setIndexArray(IndexArray& array) { VulkanRenderer::setIndexArray(array); }
 
     Application::Application()
     {
@@ -53,12 +46,6 @@ namespace SimpleEngine {
 
         camera.set_viewport_size(static_cast<float>(window_width), static_cast<float>(window_height));
 
-        m_event_dispatcher.add_event_listener<EventMouseMoved>(
-            [](EventMouseMoved& event)
-            {
-                //LOG_INFO("[MouseMoved] Mouse moved to {0}x{1}", event.x, event.y);
-            });
-
         m_event_dispatcher.add_event_listener<EventWindowResize>(
             [&](EventWindowResize& event)
             {
@@ -72,22 +59,6 @@ namespace SimpleEngine {
             {
                 LOG_INFO("[WindowClose]");
                 close();
-            });
-
-        m_event_dispatcher.add_event_listener<EventMouseButtonPressed>(
-            [&](EventMouseButtonPressed& event)
-            {
-                LOG_INFO("[Mouse button pressed: {0}, at ({1}, {2})", static_cast<int>(event.mouse_button), event.x_pos, event.y_pos);
-                Input::PressMouseButton(event.mouse_button);
-                on_mouse_button_event(event.mouse_button, event.x_pos, event.y_pos, true);
-            });
-
-        m_event_dispatcher.add_event_listener<EventMouseButtonReleased>(
-            [&](EventMouseButtonReleased& event)
-            {
-                LOG_INFO("[Mouse button released: {0}, at ({1}, {2})", static_cast<int>(event.mouse_button), event.x_pos, event.y_pos);
-                Input::ReleaseMouseButton(event.mouse_button);
-                on_mouse_button_event(event.mouse_button, event.x_pos, event.y_pos, false);
             });
 
         m_event_dispatcher.add_event_listener<EventKeyPressed>(
@@ -116,6 +87,29 @@ namespace SimpleEngine {
                 }
                 Input::ReleaseKey(event.key_code);
             });
+
+        m_event_dispatcher.add_event_listener<EventMouseMoved>(
+            [](EventMouseMoved& event)
+            {
+                //LOG_INFO("[MouseMoved] Mouse moved to {0}x{1}", event.x, event.y);
+            });
+
+        m_event_dispatcher.add_event_listener<EventMouseButtonPressed>(
+            [&](EventMouseButtonPressed& event)
+            {
+                LOG_INFO("[Mouse button pressed: {0}, at ({1}, {2})", static_cast<int>(event.mouse_button), event.x_pos, event.y_pos);
+                Input::PressMouseButton(event.mouse_button);
+                on_mouse_button_event(event.mouse_button, event.x_pos, event.y_pos, true);
+            });
+
+        m_event_dispatcher.add_event_listener<EventMouseButtonReleased>(
+            [&](EventMouseButtonReleased& event)
+            {
+                LOG_INFO("[Mouse button released: {0}, at ({1}, {2})", static_cast<int>(event.mouse_button), event.x_pos, event.y_pos);
+                Input::ReleaseMouseButton(event.mouse_button);
+                on_mouse_button_event(event.mouse_button, event.x_pos, event.y_pos, false);
+            });
+
 
         m_pWindow->set_event_callback(
             [&](BaseEvent& event)

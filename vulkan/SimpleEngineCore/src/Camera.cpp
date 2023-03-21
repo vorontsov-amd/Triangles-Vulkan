@@ -5,12 +5,9 @@
 #include <iostream>
 
 namespace SimpleEngine {
-    Camera::Camera(const glm::vec3& position,
-        const glm::vec3& rotation,
-        const ProjectionMode projection_mode)
-        : m_position(position)
-        , m_rotation(rotation)
-        , m_projection_mode(projection_mode)
+    Camera::Camera(const glm::vec3& position, const glm::vec3& rotation) : 
+        m_position(position),
+        m_rotation(rotation)
     {
         update_view_matrix();
         update_projection_matrix();
@@ -54,21 +51,7 @@ namespace SimpleEngine {
 
     void Camera::update_projection_matrix()
     {
-        if (m_projection_mode == ProjectionMode::Perspective)
-        {
-            m_projection_matrix = glm::perspective(glm::radians(m_field_of_view), m_viewport_width / m_viewport_height, m_near_clip_plane, m_far_clip_plane);
-        }
-        else
-        {
-            float r = 2;
-            float t = 2;
-            float f = 100;
-            float n = 0.1f;
-            m_projection_matrix = glm::mat4(1 / r, 0, 0, 0,
-                                            0, 1 / t, 0, 0,
-                                            0, 0, -2 / (f - n), 0,
-                                            0, 0, (-f - n) / (f - n), 1);
-        }
+        m_projection_matrix = glm::perspective(glm::radians(m_field_of_view), m_viewport_width / m_viewport_height, m_near_clip_plane, m_far_clip_plane);
     }
 
     void Camera::set_position(const glm::vec3& position)
@@ -88,12 +71,6 @@ namespace SimpleEngine {
         m_position = position;
         m_rotation = rotation;
         m_update_view_matrix = true;
-    }
-
-    void Camera::set_projection_mode(const ProjectionMode projection_mode)
-    {
-        m_projection_mode = projection_mode;
-        update_projection_matrix();
     }
 
     void Camera::set_far_clip_plane(const float far)

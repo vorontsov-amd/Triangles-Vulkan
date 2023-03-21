@@ -9,10 +9,10 @@
 
 namespace SimpleEngine {
 
-    Window::Window(std::string title, const unsigned int width, const unsigned int height)
-        : m_data({ std::move(title), width, height })
+    Window::Window(std::string title, const unsigned int width, const unsigned int height) : 
+        m_data({ std::move(title), width, height }) 
     {
-        int resultCode = init();
+        init();
     }
 
     Window::~Window()
@@ -131,13 +131,6 @@ namespace SimpleEngine {
         glfwSetFramebufferSizeCallback(m_pWindow,
             [](GLFWwindow* pWindow, int width, int height)
             {
-                // int width = 0, height = 0;
-                // glfwGetFramebufferSize(pWindow, &width, &height);
-                // while (width == 0 || height == 0) {
-                //     glfwGetFramebufferSize(pWindow, &width, &height);
-                //     glfwWaitEvents();
-                // }
-                
                 WindowData& data = *static_cast<WindowData*>(glfwGetWindowUserPointer(pWindow));
                 EventFramebufferResize event(width, height);
                 data.eventCallbackFn(event);

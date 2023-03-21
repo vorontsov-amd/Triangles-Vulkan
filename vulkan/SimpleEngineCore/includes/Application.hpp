@@ -38,13 +38,6 @@ namespace SimpleEngine {
 
         Camera camera{glm::vec3(-5.f, 0.f, 0.f)};
 
-        float light_source_position[3] = { 0.f, 0.f, 0.f };
-        float light_source_color[3] = { 1.f, 1.f, 1.f };
-        float ambient_factor = 0.1f;
-        float diffuse_factor = 1.0f;
-        float specular_factor = 0.5f;
-        float shininess = 32.f;
-
     private:
         void draw();
 
@@ -55,8 +48,8 @@ namespace SimpleEngine {
         bool m_bCloseWindow = false;
 
     protected:
-        void setVerties(VertexArray& array);
-        void setIndies(IndexArray& array);  
+        void setVertexArray(VertexArray& array);
+        void setIndexArray(IndexArray& array);  
     };
 
 }
