@@ -1240,7 +1240,7 @@ namespace SimpleEngine {
             throw std::runtime_error("failed to acquire swap chain image!");
         }
 
-        updateUniformBuffer(currentFrame, view, proj, camera_pos);
+        updateUniformBuffer(currentFrame, view, proj,camera_pos);
 
         vkResetFences(device, 1, &inFlightFences[currentFrame]);
 

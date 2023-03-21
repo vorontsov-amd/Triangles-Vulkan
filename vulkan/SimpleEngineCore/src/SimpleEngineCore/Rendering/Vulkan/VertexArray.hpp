@@ -32,7 +32,7 @@ namespace SimpleEngine {
             attributeDescriptions[1].offset = offsetof(Vertex, color);
 
             attributeDescriptions[2].binding = 0;
-            attributeDescriptions[2].location = 1;
+            attributeDescriptions[2].location = 2;
             attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
             attributeDescriptions[2].offset = offsetof(Vertex, normal);
 

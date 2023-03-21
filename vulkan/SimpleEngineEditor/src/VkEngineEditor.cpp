@@ -263,7 +263,7 @@ class SimpleEngineEditor : public SimpleEngine::Application
 
             for (int i = 0; i < size; ++i) {
 
-                auto normal = -cross(tr[i][2] - tr[i][0], tr[i][1] - tr[i][0]); 
+                auto normal = cross(tr[i][1] - tr[i][0], tr[i][2] - tr[i][0]); 
 
                 SimpleEngine::Vertex firstVertex  = makeVertex(tr[i], 2, flag[i], normal);
                 SimpleEngine::Vertex secondVertex = makeVertex(tr[i], 1, flag[i], normal);

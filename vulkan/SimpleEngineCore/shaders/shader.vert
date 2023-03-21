@@ -1,17 +1,47 @@
+// #version 450
+
+// layout(binding = 0) uniform UniformBufferObject {
+//     mat4 model;
+//     mat4 view;
+//     mat4 proj;
+// } ubo;
+
+// layout(location = 0) in vec3 inPosition;
+// layout(location = 1) in vec3 inColor;
+
+// layout(location = 0) out vec3 fragColor;
+
+// void main() {
+//     gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
+//     fragColor = inColor;
+// }
+
 #version 450
 
 layout(binding = 0) uniform UniformBufferObject {
+
     mat4 model;
     mat4 view;
     mat4 proj;
+    vec3 inViewPos;
+
 } ubo;
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inColor;
+layout(location = 2) in vec3 inNormal;
 
 layout(location = 0) out vec3 fragColor;
+layout(location = 1) out vec3 Normal;
+layout(location = 2) out vec3 fragPos;
+layout(location = 3) out vec3 viewPos;
 
-void main() {
+void main () {
+
     gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
-    fragColor = inColor;
+    fragColor   = inColor;
+    Normal      = inNormal;
+    fragPos     = vec3(ubo.model * vec4(inPosition, 1.0));
+    viewPos     = ubo.inViewPos;
+
 }
