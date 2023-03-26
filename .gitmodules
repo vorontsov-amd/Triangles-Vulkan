@@ -8,3 +8,6 @@
 [submodule "3rd-party/spdlog"]
 	path = 3rd-party/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "glfwpp"]
+	path = glfwpp
+	url = git@github.com:janekb04/glfwpp.git

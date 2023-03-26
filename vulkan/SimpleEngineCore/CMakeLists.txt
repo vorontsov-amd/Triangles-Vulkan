@@ -18,6 +18,8 @@ set(ENGINE_PRIVATE_INCLUDES
 	src/Window.hpp
 	src/sourcePath.h
 	src/sourcePath.h.in
+	src/Rendering/Vulkan/ValidationLayer.hpp
+	src/Rendering/Vulkan/DebugMessenger.hpp
 )
 
 set(ENGINE_PRIVATE_SOURCES
@@ -52,6 +54,9 @@ target_compile_features(${ENGINE_PROJECT_NAME} PUBLIC cxx_std_17)
 
 add_subdirectory(../../3rd-party/glfw ${CMAKE_CURRENT_BINARY_DIR}/glfw)
 target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE glfw)
+#set(GLFWPP_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE) # disable building GLFWPP examples
+#add_subdirectory(../../3rd-party/glfwpp ${CMAKE_CURRENT_BINARY_DIR}/glfwpp)
+#target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE GLFWPP)
 
 add_subdirectory(../../3rd-party/spdlog ${CMAKE_CURRENT_BINARY_DIR}/spdlog)
 target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE spdlog)

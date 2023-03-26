@@ -1,1 +1,6 @@
-build/*
+build/
+.vscode/
+.cache/
+.idea/
+.fleet/
+cmake-build-debug/
