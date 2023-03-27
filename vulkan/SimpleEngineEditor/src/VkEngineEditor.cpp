@@ -1,10 +1,6 @@
-#include <iostream>
 #include <memory>
-#include <imgui/imgui.h>
-
 #include <Input.hpp>
 #include <Application.hpp>
-#include <imgui/imgui_internal.h>
 #include "intersect.hpp"
 #include "VertexArray.hpp"
 
@@ -14,7 +10,7 @@ class SimpleEngineEditor : public SimpleEngine::Application
     double m_initial_mouse_pos_y = 0.0;
     float delta = 0.05f;    
 
-    virtual void on_update() override
+    void on_update() override
     {
         glm::vec3 movement_delta{ 0, 0, 0 };
         glm::vec3 rotation_delta{ 0, 0, 0 };
@@ -96,7 +92,7 @@ class SimpleEngineEditor : public SimpleEngine::Application
     }
 
 
-    virtual void on_mouse_button_event(const SimpleEngine::MouseButton button_code,
+    void on_mouse_button_event(const SimpleEngine::MouseButton button_code,
                                        const double x_pos,
                                        const double y_pos,
                                        const bool pressed) override
@@ -106,7 +102,7 @@ class SimpleEngineEditor : public SimpleEngine::Application
     }
 
 
-    SimpleEngine::Vertex makeVertex(GeomObj::Triangle& tr, int ver, bool flag, GeomObj::Vector& normal) {
+    static SimpleEngine::Vertex makeVertex(GeomObj::Triangle& tr, int ver, bool flag, GeomObj::Vector& normal) {
         auto vert = tr[ver];
 
         auto blue = glm::vec3(0.0,0.0,1.0);

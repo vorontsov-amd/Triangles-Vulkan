@@ -31,7 +31,7 @@ namespace SimpleEngine {
         std::optional<uint32_t> graphicsFamily;
         std::optional<uint32_t> presentFamily;
 
-        bool isComplete() {
+        [[nodiscard]] bool isComplete() const {
             return graphicsFamily.has_value() && presentFamily.has_value();
         }
     };
@@ -62,26 +62,6 @@ namespace SimpleEngine {
     }
 
 
-    void DestroyDebugUtilsMessengerEXT(vk::Instance instance, vk::DebugUtilsMessengerEXT debugMessenger, const vk::AllocationCallbacks* pAllocator) {
-//        auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-//        if (func != nullptr) {
-//            func(instance, debugMessenger, pAllocator);
-//        }
-//        instance.destroyDebugUtilsMessengerEXT(debugMessenger);
-    }
-
-    vk::Result CreateDebugUtilsMessengerEXT(vk::Instance instance, const vk::DebugUtilsMessengerCreateInfoEXT* pCreateInfo, const vk::AllocationCallbacks* pAllocator, vk::DebugUtilsMessengerEXT* pDebugMessenger) {
-//        return instance.createDebugUtilsMessengerEXT(pCreateInfo, nullptr, pDebugMessenger);
-
-        //        auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-//        if (func != nullptr) {
-//            return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
-//        } else {
-//            return VK_ERROR_EXTENSION_NOT_PRESENT;
-//        }
-
-    }
-
     static std::vector<char> readFile(const std::string& filename) {
         std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
@@ -98,11 +78,6 @@ namespace SimpleEngine {
         file.close();
 
         return buffer;
-    }
-
-    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
-        std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
-        return VK_FALSE;
     }
 
 
@@ -147,7 +122,7 @@ namespace SimpleEngine {
         createSyncObjects();
     }
 
-    vk::Format VulkanRenderer::findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) {
+    vk::Format VulkanRenderer::findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) const {
         for (auto&& format : candidates) {
             vk::FormatProperties props;
             physicalDevice.getFormatProperties(format, &props);
@@ -174,7 +149,7 @@ namespace SimpleEngine {
     }
 
 
-    vk::ImageView VulkanRenderer::createImageView(vk::Image image, vk::Format format, vk::ImageAspectFlags aspectFlags) {
+    vk::ImageView VulkanRenderer::createImageView(vk::Image image, vk::Format format, vk::ImageAspectFlags aspectFlags) const {
         vk::ImageViewCreateInfo viewInfo {
             vk::ImageViewCreateFlags(),
             image,
@@ -728,7 +703,7 @@ namespace SimpleEngine {
 
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             createBuffer(bufferSize, vk::BufferUsageFlagBits::eUniformBuffer, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent, uniformBuffers[i], uniformBuffersMemory[i]);
-            device.mapMemory(uniformBuffersMemory[i], 0, bufferSize, vk::MemoryMapFlags (), &uniformBuffersMapped[i]);
+            vk::resultCheck(device.mapMemory(uniformBuffersMemory[i], 0, bufferSize, vk::MemoryMapFlags (), &uniformBuffersMapped[i]), "failed to map memory");
         }
     }
 
@@ -803,37 +778,6 @@ namespace SimpleEngine {
     }
 
 
-    void VulkanRenderer::endSingleTimeCommands(vk::CommandBuffer commandBuffer) {
-        commandBuffer.end();
-
-        vk::SubmitInfo submitInfo;
-        submitInfo.commandBufferCount = 1;
-        submitInfo.pCommandBuffers = &commandBuffer;
-
-        graphicsQueue.submit(1, &submitInfo, VK_NULL_HANDLE);
-        graphicsQueue.waitIdle();
-
-        device.freeCommandBuffers(commandPool, 1, &commandBuffer);
-    }
-
-    vk::CommandBuffer VulkanRenderer::beginSingleTimeCommands() {
-        vk::CommandBufferAllocateInfo allocInfo {
-            commandPool,
-            vk::CommandBufferLevel::ePrimary,
-            1
-        };
-
-        vk::CommandBuffer commandBuffer;
-        device.allocateCommandBuffers(&allocInfo, &commandBuffer);
-
-        vk::CommandBufferBeginInfo beginInfo {
-            vk::CommandBufferUsageFlagBits::eOneTimeSubmit
-        };
-        commandBuffer.begin(&beginInfo);
-        return commandBuffer;
-    }
-
-
     void VulkanRenderer::copyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size) {
         vk::CommandBufferAllocateInfo allocInfo {
             commandPool,
@@ -842,7 +786,7 @@ namespace SimpleEngine {
         };
 
         vk::CommandBuffer commandBuffer;
-        device.allocateCommandBuffers(&allocInfo, &commandBuffer);
+        vk::resultCheck(device.allocateCommandBuffers(&allocInfo, &commandBuffer), "failed to allocate command buffer");
 
         vk::CommandBufferBeginInfo beginInfo {
             vk::CommandBufferUsageFlagBits::eOneTimeSubmit
@@ -857,7 +801,7 @@ namespace SimpleEngine {
         submitInfo.commandBufferCount = 1;
         submitInfo.pCommandBuffers = &commandBuffer;
 
-        graphicsQueue.submit(1, &submitInfo, VK_NULL_HANDLE);
+        vk::resultCheck(graphicsQueue.submit(1, &submitInfo, VK_NULL_HANDLE), "failed to submit graphics queue");
         graphicsQueue.waitIdle();
         device.freeCommandBuffers(commandPool, 1, &commandBuffer);
         }
@@ -962,7 +906,7 @@ namespace SimpleEngine {
     }
 
     void VulkanRenderer::drawFrame(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos) {
-        device.waitForFences(1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
+        vk::resultCheck(device.waitForFences(1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX), "failed to wait for fences");
 
         uint32_t imageIndex;
         auto&& result = device.acquireNextImageKHR(swapChain, UINT64_MAX, imageAvailableSemaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);
@@ -976,7 +920,7 @@ namespace SimpleEngine {
 
         updateUniformBuffer(currentFrame, view, proj,camera_pos);
 
-        device.resetFences(1, &inFlightFences[currentFrame]);
+        vk::resultCheck(device.resetFences(1, &inFlightFences[currentFrame]), "failed to reset fences");
 
         commandBuffers[currentFrame].reset();
         recordCommandBuffer(commandBuffers[currentFrame], imageIndex);
@@ -1011,7 +955,7 @@ namespace SimpleEngine {
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
-    vk::ShaderModule VulkanRenderer::createShaderModule(const std::vector<char>& code) {
+    vk::ShaderModule VulkanRenderer::createShaderModule(const std::vector<char>& code) const {
         vk::ShaderModuleCreateInfo createInfo {
             vk::ShaderModuleCreateFlags(),
             code.size(),
@@ -1041,7 +985,7 @@ namespace SimpleEngine {
         return vk::PresentModeKHR::eFifo;
     }
 
-    vk::Extent2D VulkanRenderer::chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities) {
+    vk::Extent2D VulkanRenderer::chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities) const {
         if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
             return capabilities.currentExtent;
         } else {
@@ -1060,7 +1004,7 @@ namespace SimpleEngine {
         }
     }
 
-    SwapChainSupportDetails VulkanRenderer::querySwapChainSupport(vk::PhysicalDevice device) {
+    SwapChainSupportDetails VulkanRenderer::querySwapChainSupport(vk::PhysicalDevice device) const {
         SwapChainSupportDetails details;
 
         details.capabilities = device.getSurfaceCapabilitiesKHR(surface);
@@ -1093,7 +1037,7 @@ namespace SimpleEngine {
         return requiredExtensions.empty();
     }
 
-    QueueFamilyIndices VulkanRenderer::findQueueFamilies(vk::PhysicalDevice device) {
+    QueueFamilyIndices VulkanRenderer::findQueueFamilies(vk::PhysicalDevice device) const {
         QueueFamilyIndices indices;
 
         auto&& queueFamilies = device.getQueueFamilyProperties();
@@ -1104,7 +1048,7 @@ namespace SimpleEngine {
             }
 
             vk::Bool32 presentSupport = false;
-            device.getSurfaceSupportKHR(i, surface, &presentSupport);
+            vk::resultCheck(device.getSurfaceSupportKHR(i, surface, &presentSupport), "failed to get surface support");
 
             if (presentSupport) indices.presentFamily = i;
             if (indices.isComplete()) break;

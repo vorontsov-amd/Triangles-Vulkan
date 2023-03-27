@@ -19,7 +19,7 @@ namespace SimpleEngine {
 
     class VulkanRenderer {
     public:        
-        VulkanRenderer(const std::unique_ptr<Window>& pWindow);
+        explicit VulkanRenderer(const std::unique_ptr<Window>& pWindow);
         
         void init(GLFWwindow* pWindow) { window = pWindow; }
         void drawFrame(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos);
@@ -28,7 +28,6 @@ namespace SimpleEngine {
 
     private:
         void createInstance();
-        void setupDebugMessenger();
         void createSurface();
         void pickPhysicalDevice();
         void createLogicalDevice();
@@ -49,10 +48,10 @@ namespace SimpleEngine {
         void createSyncObjects();
 
 
-        vk::Format findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features);
+        vk::Format findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) const;
         vk::Format findDepthFormat();
-        bool hasStencilComponent(vk::Format format);
-        vk::ImageView createImageView(vk::Image image, vk::Format format, vk::ImageAspectFlags aspectFlags);
+        static bool hasStencilComponent(vk::Format format);
+        vk::ImageView createImageView(vk::Image image, vk::Format format, vk::ImageAspectFlags aspectFlags) const;
         void createImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::Image& image, vk::DeviceMemory& imageMemory);
         void cleanupSwapChain();
         void cleanup();
@@ -62,20 +61,18 @@ namespace SimpleEngine {
         uint32_t findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties);
         void recordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex);
         void updateUniformBuffer(uint32_t currentImage, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos);
-        vk::ShaderModule createShaderModule(const std::vector<char>& code);
+        vk::ShaderModule createShaderModule(const std::vector<char>& code) const;
         static vk::SurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats);
         static vk::PresentModeKHR chooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes);
-        vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities);
-        SwapChainSupportDetails querySwapChainSupport(vk::PhysicalDevice device);
+        vk::Extent2D chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities) const;
+        SwapChainSupportDetails querySwapChainSupport(vk::PhysicalDevice device) const;
         bool isDeviceSuitable(vk::PhysicalDevice device);
-        bool checkDeviceExtensionSupport(vk::PhysicalDevice device);
-        QueueFamilyIndices findQueueFamilies(vk::PhysicalDevice device);
-        std::vector<const char*> getRequiredExtensions();
+        static bool checkDeviceExtensionSupport(vk::PhysicalDevice device);
+        QueueFamilyIndices findQueueFamilies(vk::PhysicalDevice device) const;
+        static std::vector<const char*> getRequiredExtensions();
         bool checkValidationLayerSupport();
-        void endSingleTimeCommands(vk::CommandBuffer commandBuffer);
-        vk::CommandBuffer beginSingleTimeCommands();
 
-    public:
+    private:
         GLFWwindow* window;
 
         EventDispatcher m_event_dispatcher;
@@ -97,7 +94,6 @@ namespace SimpleEngine {
         vk::Extent2D swapChainExtent;
         std::vector<vk::ImageView> swapChainImageViews;
         std::vector<vk::Framebuffer> swapChainFramebuffers;
-        int min_image_count;
 
         vk::RenderPass renderPass;
         vk::DescriptorSetLayout descriptorSetLayout;
