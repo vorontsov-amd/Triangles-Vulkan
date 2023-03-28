@@ -21,6 +21,10 @@ set(ENGINE_PRIVATE_INCLUDES
 	src/Rendering/Vulkan/ValidationLayer.hpp
 	src/Rendering/Vulkan/DebugMessenger.hpp
 	src/Rendering/Vulkan/Instance.hpp
+	src/Rendering/Vulkan/WindowSurface.hpp
+	src/Rendering/Vulkan/Device.hpp
+	src/Rendering/Vulkan/VulkanUtility.hpp
+	src/Rendering/Vulkan/Swapchain.hpp
 )
 
 set(ENGINE_PRIVATE_SOURCES

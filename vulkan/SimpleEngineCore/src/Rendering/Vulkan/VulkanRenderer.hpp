@@ -9,6 +9,8 @@
 #include "Instance.hpp"
 #include "ValidationLayer.hpp"
 #include "Rendering/Vulkan/VertexArray.hpp"
+#include "WindowSurface.hpp"
+#include "Device.hpp"
 
 #include <iostream>
 
@@ -20,9 +22,8 @@ namespace SimpleEngine {
     class VulkanRenderer {
     public:        
         explicit VulkanRenderer(const std::unique_ptr<Window>& pWindow);
-        ~VulkanRenderer() {}
+        ~VulkanRenderer();
 
-        void init(GLFWwindow* pWindow) { window = pWindow; }
         void drawFrame(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos);
         static void setVertexArray(VertexArray& array); 
         static void setIndexArray(IndexArray& array); 
@@ -54,7 +55,6 @@ namespace SimpleEngine {
         vk::ImageView createImageView(vk::Image image, vk::Format format, vk::ImageAspectFlags aspectFlags) const;
         void createImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage, vk::MemoryPropertyFlags properties, vk::Image& image, vk::DeviceMemory& imageMemory);
         void cleanupSwapChain();
-        void cleanup();
         void recreateSwapChain();
         void createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::Buffer& buffer, vk::DeviceMemory& bufferMemory);
         void copyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size);
@@ -68,25 +68,23 @@ namespace SimpleEngine {
         SwapChainSupportDetails querySwapChainSupport(vk::PhysicalDevice device) const;
         bool isDeviceSuitable(vk::PhysicalDevice device);
         static bool checkDeviceExtensionSupport(vk::PhysicalDevice device);
-        QueueFamilyIndices findQueueFamilies(vk::PhysicalDevice device) const;
         static std::vector<const char*> getRequiredExtensions();
         bool checkValidationLayerSupport();
 
     private:
-        GLFWwindow* window;
-
-        EventDispatcher m_event_dispatcher;
-        bool framebufferResized = false;
-
+        VulkanWindow* window;
         Instance instance;
-        vk::DebugUtilsMessengerEXT debugMessenger;
         vk::SurfaceKHR surface;
-
+        vk::DebugUtilsMessengerEXT debugMessenger;
+        
         vk::PhysicalDevice physicalDevice;
         vk::Device device;
 
         vk::Queue graphicsQueue;
         vk::Queue presentQueue;
+
+        EventDispatcher m_event_dispatcher;
+        bool framebufferResized = false;
 
         vk::SwapchainKHR swapChain;
         std::vector<vk::Image> swapChainImages;

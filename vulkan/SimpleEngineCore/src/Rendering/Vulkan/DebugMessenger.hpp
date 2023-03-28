@@ -18,17 +18,25 @@ namespace SimpleEngine
             return debugCreateInfo;
         }
 
-        static void setup(vk::Instance& instance, vk::DebugUtilsMessengerEXT& debugMessenger) {
-            if (!ValidationLayer::enable) return;
-            vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo = DebugMessenger::populateDebugMessengerCreateInfo();
-            vk::DispatchLoaderDynamic loaderDynamic {instance, vkGetInstanceProcAddr};
-            vk::resultCheck(instance.createDebugUtilsMessengerEXT(&debugCreateInfo, nullptr, &debugMessenger, loaderDynamic), "failed to create debug messenger!");
+        static vk::DebugUtilsMessengerEXT make(vk::Instance& instance) {
+            vk::DebugUtilsMessengerEXT messenger;
+            setup(instance, messenger);
+            return messenger;
         }
 
         static void destroy(vk::Instance& instance, vk::DebugUtilsMessengerEXT& debugMessenger) {
             if (!ValidationLayer::enable) return;
             vk::DispatchLoaderDynamic loaderDynamic {instance, vkGetInstanceProcAddr};
             instance.destroyDebugUtilsMessengerEXT(debugMessenger, nullptr, loaderDynamic);
+        }
+
+    private:
+
+        static void setup(vk::Instance& instance, vk::DebugUtilsMessengerEXT& debugMessenger) {
+            if (!ValidationLayer::enable) return;
+            vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo = DebugMessenger::populateDebugMessengerCreateInfo();
+            vk::DispatchLoaderDynamic loaderDynamic {instance, vkGetInstanceProcAddr};
+            vk::resultCheck(instance.createDebugUtilsMessengerEXT(&debugCreateInfo, nullptr, &debugMessenger, loaderDynamic), "failed to create debug messenger!");
         }
 
     };
