@@ -22,7 +22,7 @@ void main () {
 
     gl_Position = ubo.proj * ubo.view * ubo.model * vec4(inPosition, 1.0);
     fragColor   = inColor;
-    Normal      = inNormal;
+    Normal      = normalize(mat3(ubo.model) * inNormal);
     fragPos     = vec3(ubo.model * vec4(inPosition, 1.0));
     viewPos     = ubo.inViewPos;
 

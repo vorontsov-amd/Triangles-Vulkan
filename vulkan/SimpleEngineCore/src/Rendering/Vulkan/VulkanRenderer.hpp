@@ -6,7 +6,7 @@
 #include "sourcePath.h"
 #include <glm/glm.hpp>
 // #include "SimpleEngineCore/Rendering/Vulkan/VertexArray.hpp"
-
+#include "Instance.hpp"
 #include "ValidationLayer.hpp"
 #include "Rendering/Vulkan/VertexArray.hpp"
 
@@ -20,14 +20,14 @@ namespace SimpleEngine {
     class VulkanRenderer {
     public:        
         explicit VulkanRenderer(const std::unique_ptr<Window>& pWindow);
-        
+        ~VulkanRenderer() {}
+
         void init(GLFWwindow* pWindow) { window = pWindow; }
         void drawFrame(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos);
         static void setVertexArray(VertexArray& array); 
         static void setIndexArray(IndexArray& array); 
 
     private:
-        void createInstance();
         void createSurface();
         void pickPhysicalDevice();
         void createLogicalDevice();
@@ -78,7 +78,7 @@ namespace SimpleEngine {
         EventDispatcher m_event_dispatcher;
         bool framebufferResized = false;
 
-        vk::Instance instance;
+        Instance instance;
         vk::DebugUtilsMessengerEXT debugMessenger;
         vk::SurfaceKHR surface;
 

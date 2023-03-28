@@ -100,7 +100,6 @@ namespace SimpleEngine {
 
         window = pWindow->m_pWindow;
 
-        createInstance();
         DebugMessenger::setup(instance, debugMessenger);
         createSurface();
         pickPhysicalDevice();
@@ -250,8 +249,6 @@ namespace SimpleEngine {
             DebugMessenger::destroy(instance, debugMessenger);
         }
         instance.destroySurfaceKHR(surface, nullptr);
-        vkDestroyInstance(instance, nullptr);
-        instance.destroy();
     }
 
     void VulkanRenderer::recreateSwapChain() {
@@ -270,50 +267,8 @@ namespace SimpleEngine {
         createImageViews();
         createDepthResources();
         createFramebuffers();
-
-        // ImGui_ImplVulkan_SetMinImageCount(min_image_count);
-        // ImGui_ImplVulkanH_CreateWindow(g_Instance, g_PhysicalDevice, g_Device, &g_MainWindowData, 
-        //         g_QueueFamily, g_Allocator, g_SwapChainResizeWidth, g_SwapChainResizeHeight, g_MinImageCount);
-        // g_MainWindowData.FrameIndex = 0;
     }
 
-    std::vector<const char*> VulkanRenderer::getRequiredExtensions() {
-        uint32_t glfwExtensionCount = 0;
-        const char** glfwExtensions;
-        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-        std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-
-        if (ValidationLayer::enable) {
-            extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-        }
-
-        return extensions;
-    }
-
-    void VulkanRenderer::createInstance() {
-        if (ValidationLayer::enable && !ValidationLayer::checkSupport()) {
-            throw std::runtime_error("validation layers requested, but not available!");
-        }
-
-        vk::ApplicationInfo appInfo {
-                "3D Triangle Application",
-                VK_API_VERSION_1_0,
-                "No Engine",
-                VK_API_VERSION_1_0,
-                VK_API_VERSION_1_0
-        };
-
-        auto&& extensions = getRequiredExtensions();
-        vk::InstanceCreateInfo createInfo {
-                vk::InstanceCreateFlags(),
-                &appInfo,
-                ValidationLayer::validationLayers,
-                extensions
-        };
-
-        vk::resultCheck(vk::createInstance(&createInfo, nullptr, &instance), "failed to create instance!");
-    }
 
     void VulkanRenderer::createSurface() {
         VkSurfaceKHR surfaceCore {};

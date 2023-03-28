@@ -20,6 +20,7 @@ set(ENGINE_PRIVATE_INCLUDES
 	src/sourcePath.h.in
 	src/Rendering/Vulkan/ValidationLayer.hpp
 	src/Rendering/Vulkan/DebugMessenger.hpp
+	src/Rendering/Vulkan/Instance.hpp
 )
 
 set(ENGINE_PRIVATE_SOURCES
