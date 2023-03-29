@@ -16,9 +16,13 @@
 
 
 namespace SimpleEngine {
+
+
     void Application::setVertexArray(VertexArray& array) { VulkanRenderer::setVertexArray(array); }
 
     void Application::setIndexArray(IndexArray& array) { VulkanRenderer::setIndexArray(array); }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     Application::Application()
     {
@@ -31,12 +35,16 @@ namespace SimpleEngine {
         LOG_INFO("Closing Application");
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     void Application::draw()
     {
         m_pWindow->on_update();
         m_pRenderer->drawFrame(camera.get_view_matrix(), camera.get_projection_matrix(), camera.get_position());
         on_update();
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     int Application::start(unsigned int window_width, unsigned int window_height, const char* title)
     {
@@ -126,6 +134,8 @@ namespace SimpleEngine {
 
         return 0;
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     glm::vec2 Application::get_current_cursor_position() const
     {
