@@ -55,3 +55,4 @@ $ ./bin/triangles < ./bin/10000.1.txt
 
 ## Useful materials:
 * **Geometric Tools for Computer Graphics** by Philip Schneider and David Eberly [2003]
+* [Vulkan Tutorial](https://vulkan-tutorial.com/Introduction)
