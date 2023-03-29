@@ -29,7 +29,7 @@ void main() {
     vec3 result = fragColor * (ambient + diffuse + specular);
     
     vec3 dir = viewPos - fragPos;
-    result = clamp(0.1 * result, result, result / dot(dir, dir) * 35);
+    result = clamp(0.1 * result, result, result / dot(dir, dir) * 350);
 
     outColor = vec4(result, 1.0);
 }
