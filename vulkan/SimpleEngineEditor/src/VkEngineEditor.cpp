@@ -92,10 +92,10 @@ class SimpleEngineEditor : public SimpleEngine::Application
     }
 
 
-    void on_mouse_button_event(const SimpleEngine::MouseButton button_code,
-                                       const double x_pos,
-                                       const double y_pos,
-                                       const bool pressed) override
+    void on_mouse_button_event(SimpleEngine::MouseButton button_code,
+                               double x_pos,
+                               double y_pos,
+                               bool pressed) override
     {
         m_initial_mouse_pos_x = x_pos;
         m_initial_mouse_pos_y = y_pos;
@@ -172,7 +172,7 @@ int main()
 {
     auto pSimpleEngineEditor = std::make_unique<SimpleEngineEditor>();
 
-    int returnCode = pSimpleEngineEditor->start(1024, 1024, "SimpleEngine Editor");
+    int returnCode = pSimpleEngineEditor->start(1024, 1024, "Triangles with Vulkan");
 
     return returnCode;
 }

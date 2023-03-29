@@ -6,7 +6,6 @@
 #include "Camera.hpp"
 #include "Rendering/Vulkan/VulkanRenderer.hpp"
 
-#include <imgui/imgui.h>
 #include <glm/mat3x3.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/trigonometric.hpp>
@@ -42,7 +41,7 @@ namespace SimpleEngine {
     int Application::start(unsigned int window_width, unsigned int window_height, const char* title)
     {
         m_pWindow   = std::make_unique<Window>(title, window_width, window_height);
-        m_pRenderer = std::make_unique<VulkanRenderer>(m_pWindow);
+        m_pRenderer = std::make_unique<VulkanRenderer>(m_event_dispatcher, m_pWindow);
 
         camera.set_viewport_size(static_cast<float>(window_width), static_cast<float>(window_height));
 

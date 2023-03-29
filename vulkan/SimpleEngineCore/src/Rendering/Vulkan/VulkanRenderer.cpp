@@ -8,7 +8,7 @@
 #include "ValidationLayer.hpp"
 #include "Log.hpp"
 #include "DebugMessenger.hpp"
-
+#include "WindowSurface.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
@@ -21,11 +21,16 @@
 
 namespace SimpleEngine {
 
-    const int MAX_FRAMES_IN_FLIGHT = 2;
+    static const int MAX_FRAMES_IN_FLIGHT = 2;
 
-    const std::vector<const char*> deviceExtensions = {
+    static const std::vector<const char*> deviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
+
+    static std::vector<Vertex> vertices;
+    static std::vector<uint16_t> indices;
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     struct QueueFamilyIndices {
         std::optional<uint32_t> graphicsFamily;
@@ -50,9 +55,7 @@ namespace SimpleEngine {
         alignas(16) glm::vec3 view_pos;
     };
 
-
-    static std::vector<Vertex> vertices;
-    static std::vector<uint16_t> indices;
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     void VulkanRenderer::setVertexArray(VertexArray& array) { 
         std::copy(array.begin(), array.end(), std::back_inserter(vertices));
@@ -61,6 +64,7 @@ namespace SimpleEngine {
         std::copy(array.begin(), array.end(), std::back_inserter(indices)); 
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     static std::vector<char> readFile(const std::string& filename) {
         std::ifstream file(filename, std::ios::ate | std::ios::binary);
@@ -80,10 +84,13 @@ namespace SimpleEngine {
         return buffer;
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-    VulkanRenderer::VulkanRenderer(const std::unique_ptr<Window>& pWindow)
+    VulkanRenderer::VulkanRenderer(EventDispatcher& event_dispatcher, const std::unique_ptr<Window>& pWindow) : window{VulkanWindow::make(pWindow)}, surface{Surface::make(instance, window)}
     {
-        m_event_dispatcher.add_event_listener<EventFramebufferResize>(
+        DebugMessenger::setup(instance, debugMessenger);
+        
+        event_dispatcher.add_event_listener<EventFramebufferResize>(
             [&](EventFramebufferResize& event)
             {
                 LOG_INFO("Framebuffer was resized");
@@ -91,17 +98,6 @@ namespace SimpleEngine {
             }
         );
 
-        pWindow->set_event_callback(
-            [&](BaseEvent& event)
-            {
-                m_event_dispatcher.dispatch(event);
-            }
-        );
-
-        window = pWindow->m_pWindow;
-
-        DebugMessenger::setup(instance, debugMessenger);
-        createSurface();
         pickPhysicalDevice();
         createLogicalDevice();
         createSwapChain();
@@ -121,6 +117,8 @@ namespace SimpleEngine {
         createSyncObjects();
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     vk::Format VulkanRenderer::findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) const {
         for (auto&& format : candidates) {
             vk::FormatProperties props;
@@ -135,6 +133,8 @@ namespace SimpleEngine {
         throw std::runtime_error("failed to find supported format!");
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     vk::Format VulkanRenderer::findDepthFormat() {
         return findSupportedFormat(
             {vk::Format::eD32Sfloat, vk::Format::eD32SfloatS8Uint, vk::Format::eD24UnormS8Uint},
@@ -143,10 +143,13 @@ namespace SimpleEngine {
         );
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     bool VulkanRenderer::hasStencilComponent(vk::Format format) {
         return format == vk::Format::eD32SfloatS8Uint || format == vk::Format::eD24UnormS8Uint;
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     vk::ImageView VulkanRenderer::createImageView(vk::Image image, vk::Format format, vk::ImageAspectFlags aspectFlags) const {
         vk::ImageViewCreateInfo viewInfo {
@@ -166,6 +169,8 @@ namespace SimpleEngine {
         vk::resultCheck(device.createImageView(&viewInfo, nullptr, &imageView), "failed to create texture image view!");
         return imageView;
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     void VulkanRenderer::createImage(uint32_t width, uint32_t height, vk::Format format, vk::ImageTiling tiling, vk::ImageUsageFlags usage,
                                      vk::MemoryPropertyFlags properties, vk::Image& image, vk::DeviceMemory& imageMemory) {
@@ -197,6 +202,7 @@ namespace SimpleEngine {
         vkBindImageMemory(device, image, imageMemory, 0);
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     void VulkanRenderer::createDepthResources() {
         vk::Format depthFormat = findDepthFormat();
@@ -204,6 +210,7 @@ namespace SimpleEngine {
         depthImageView = createImageView(depthImage, depthFormat, vk::ImageAspectFlagBits::eDepth);
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     void VulkanRenderer::cleanupSwapChain() {
 
@@ -219,7 +226,10 @@ namespace SimpleEngine {
         device.destroySwapchainKHR(swapChain, nullptr);
     }
 
-    void VulkanRenderer::cleanup() {
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    VulkanRenderer::~VulkanRenderer() {
+        device.waitIdle();
         cleanupSwapChain();
 
         device.destroyPipeline(graphicsPipeline, nullptr);
@@ -251,15 +261,17 @@ namespace SimpleEngine {
         instance.destroySurfaceKHR(surface, nullptr);
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     void VulkanRenderer::recreateSwapChain() {
         int width = 0, height = 0;
-        glfwGetFramebufferSize(window, &width, &height);
+        window->getFramebufferSize(&width, &height);
         while (width == 0 || height == 0) {
-            glfwGetFramebufferSize(window, &width, &height);
+            window->getFramebufferSize(&width, &height);
             glfwWaitEvents();
         }
 
-        vkDeviceWaitIdle(device);
+        device.waitIdle();
 
         cleanupSwapChain();
 
@@ -269,14 +281,7 @@ namespace SimpleEngine {
         createFramebuffers();
     }
 
-
-    void VulkanRenderer::createSurface() {
-        VkSurfaceKHR surfaceCore {};
-        if (glfwCreateWindowSurface(instance, window, nullptr, &surfaceCore) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create window surface!");
-        }
-        surface = surfaceCore;
-    }
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     void VulkanRenderer::pickPhysicalDevice() {
 
@@ -296,6 +301,8 @@ namespace SimpleEngine {
             throw std::runtime_error("failed to find a suitable GPU!");
         }
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     void VulkanRenderer::createLogicalDevice() {
         QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
@@ -327,6 +334,8 @@ namespace SimpleEngine {
         device.getQueue(indices.graphicsFamily.value(), 0, &graphicsQueue);
         device.getQueue(indices.presentFamily.value(), 0, &presentQueue);
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     void VulkanRenderer::createSwapChain() {
         SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
@@ -374,12 +383,16 @@ namespace SimpleEngine {
         swapChainExtent = extent;
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     void VulkanRenderer::createImageViews() {
         swapChainImageViews.resize(swapChainImages.size());
         for (uint32_t i = 0; i < swapChainImages.size(); i++) {
             swapChainImageViews[i] = createImageView(swapChainImages[i], swapChainImageFormat, vk::ImageAspectFlagBits::eColor);
         }
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     void VulkanRenderer::createRenderPass() {
         vk::AttachmentDescription colorAttachment{
@@ -443,6 +456,8 @@ namespace SimpleEngine {
         vk::resultCheck(device.createRenderPass(&renderPassInfo, nullptr, &renderPass), "failed to create render pass!");
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     void VulkanRenderer::createDescriptorSetLayout() {
         vk::DescriptorSetLayoutBinding uboLayoutBinding {
             0,
@@ -460,6 +475,8 @@ namespace SimpleEngine {
 
         vk::resultCheck(device.createDescriptorSetLayout(&layoutInfo, nullptr, &descriptorSetLayout), "failed to create descriptor set layout!");
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     void VulkanRenderer::createGraphicsPipeline() {
         auto vertShaderCode = readFile(VERT_SHADER_PATH);
@@ -579,6 +596,8 @@ namespace SimpleEngine {
         device.destroy(vertShaderModule);
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     void VulkanRenderer::createFramebuffers() {
         swapChainFramebuffers.resize(swapChainImageViews.size());
 
@@ -601,6 +620,8 @@ namespace SimpleEngine {
         }
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     void VulkanRenderer::createCommandPool() {
         QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
         vk::CommandPoolCreateInfo poolInfo {
@@ -609,6 +630,8 @@ namespace SimpleEngine {
         };
         vk::resultCheck(device.createCommandPool(&poolInfo, nullptr, &commandPool), "failed to create graphics command pool!");
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     void VulkanRenderer::createVertexBuffer() {
         vk::DeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
@@ -630,6 +653,8 @@ namespace SimpleEngine {
         vkFreeMemory(device, stagingBufferMemory, nullptr);
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     void VulkanRenderer::createIndexBuffer() {
         vk::DeviceSize bufferSize = sizeof(indices[0]) * indices.size();
 
@@ -649,6 +674,8 @@ namespace SimpleEngine {
         device.freeMemory(stagingBufferMemory);
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     void VulkanRenderer::createUniformBuffers() {
         vk::DeviceSize bufferSize = sizeof(UniformBufferObject);
 
@@ -661,6 +688,8 @@ namespace SimpleEngine {
             vk::resultCheck(device.mapMemory(uniformBuffersMemory[i], 0, bufferSize, vk::MemoryMapFlags (), &uniformBuffersMapped[i]), "failed to map memory");
         }
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     void VulkanRenderer::createDescriptorPool() {
         vk::DescriptorPoolSize poolSize {
@@ -677,6 +706,8 @@ namespace SimpleEngine {
 
         vk::resultCheck(device.createDescriptorPool(&poolInfo, nullptr, &descriptorPool), "failed to create descriptor pool!");
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     void VulkanRenderer::createDescriptorSets() {
         std::vector<vk::DescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT, descriptorSetLayout);
@@ -710,6 +741,8 @@ namespace SimpleEngine {
         }
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     void VulkanRenderer::createBuffer(vk::DeviceSize size, vk::BufferUsageFlags usage, vk::MemoryPropertyFlags properties, vk::Buffer& buffer, vk::DeviceMemory& bufferMemory) {
         
         vk::BufferCreateInfo bufferInfo {
@@ -732,6 +765,8 @@ namespace SimpleEngine {
         device.bindBufferMemory(buffer, bufferMemory, 0);
     }
 
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     void VulkanRenderer::copyBuffer(vk::Buffer srcBuffer, vk::Buffer dstBuffer, vk::DeviceSize size) {
         vk::CommandBufferAllocateInfo allocInfo {
@@ -761,6 +796,8 @@ namespace SimpleEngine {
         device.freeCommandBuffers(commandPool, 1, &commandBuffer);
         }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     uint32_t VulkanRenderer::findMemoryType(uint32_t typeFilter, vk::MemoryPropertyFlags properties) {
         vk::PhysicalDeviceMemoryProperties memProperties;
         physicalDevice.getMemoryProperties(&memProperties);
@@ -774,6 +811,8 @@ namespace SimpleEngine {
         throw std::runtime_error("failed to find suitable memory type!");
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     void VulkanRenderer::createCommandBuffers() {
         commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
 
@@ -785,6 +824,8 @@ namespace SimpleEngine {
 
         vk::resultCheck(device.allocateCommandBuffers(&allocInfo, commandBuffers.data()), "failed to allocate command buffers!");
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     void VulkanRenderer::recordCommandBuffer(vk::CommandBuffer commandBuffer, uint32_t imageIndex) {
         vk::CommandBufferBeginInfo beginInfo{};
@@ -831,6 +872,8 @@ namespace SimpleEngine {
         commandBuffer.end();
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     void VulkanRenderer::createSyncObjects() {
         imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
         renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -850,6 +893,8 @@ namespace SimpleEngine {
         }
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     void VulkanRenderer::updateUniformBuffer(uint32_t currentImage, const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos) {
         UniformBufferObject ubo{};
         ubo.view_pos = camera_pos;
@@ -859,6 +904,8 @@ namespace SimpleEngine {
         ubo.proj[1][1] *= -1;
         memcpy(uniformBuffersMapped[currentImage], &ubo, sizeof(ubo));
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     void VulkanRenderer::drawFrame(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos) {
         vk::resultCheck(device.waitForFences(1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX), "failed to wait for fences");
@@ -910,6 +957,8 @@ namespace SimpleEngine {
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     vk::ShaderModule VulkanRenderer::createShaderModule(const std::vector<char>& code) const {
         vk::ShaderModuleCreateInfo createInfo {
             vk::ShaderModuleCreateFlags(),
@@ -922,6 +971,8 @@ namespace SimpleEngine {
         return shaderModule;
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     vk::SurfaceFormatKHR VulkanRenderer::chooseSwapSurfaceFormat(const std::vector<vk::SurfaceFormatKHR>& availableFormats) {
         for (auto&& availableFormat : availableFormats) {
             if (availableFormat.format == vk::Format::eB8G8R8A8Srgb && availableFormat.colorSpace == vk::ColorSpaceKHR::eExtendedSrgbNonlinearEXT) {
@@ -930,6 +981,8 @@ namespace SimpleEngine {
         }
         return availableFormats[0];
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     vk::PresentModeKHR VulkanRenderer::chooseSwapPresentMode(const std::vector<vk::PresentModeKHR>& availablePresentModes) {
         for (auto&& availablePresentMode : availablePresentModes) {
@@ -940,12 +993,14 @@ namespace SimpleEngine {
         return vk::PresentModeKHR::eFifo;
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     vk::Extent2D VulkanRenderer::chooseSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities) const {
         if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
             return capabilities.currentExtent;
         } else {
             int width, height;
-            glfwGetFramebufferSize(window, &width, &height);
+            window->getFramebufferSize(&width, &height);
 
             vk::Extent2D actualExtent = {
                 static_cast<uint32_t>(width),
@@ -959,6 +1014,8 @@ namespace SimpleEngine {
         }
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     SwapChainSupportDetails VulkanRenderer::querySwapChainSupport(vk::PhysicalDevice device) const {
         SwapChainSupportDetails details;
 
@@ -968,6 +1025,8 @@ namespace SimpleEngine {
 
         return details;
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     bool VulkanRenderer::isDeviceSuitable(vk::PhysicalDevice device) {
         QueueFamilyIndices indices = findQueueFamilies(device);
@@ -983,6 +1042,8 @@ namespace SimpleEngine {
         return indices.isComplete() && extensionsSupported && swapChainAdequate;
     }
 
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
+
     bool VulkanRenderer::checkDeviceExtensionSupport(vk::PhysicalDevice device) {
         auto&& availableExtensions = device.enumerateDeviceExtensionProperties();
         std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
@@ -991,6 +1052,8 @@ namespace SimpleEngine {
         }
         return requiredExtensions.empty();
     }
+
+    //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     QueueFamilyIndices VulkanRenderer::findQueueFamilies(vk::PhysicalDevice device) const {
         QueueFamilyIndices indices;

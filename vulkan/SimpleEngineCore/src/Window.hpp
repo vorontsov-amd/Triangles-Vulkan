@@ -45,10 +45,10 @@ namespace SimpleEngine {
 
         int init();
         void shutdown();
-
-    public:
-        GLFWwindow* m_pWindow = nullptr;
         WindowData m_data;
+
+    protected:
+        GLFWwindow* m_pWindow = nullptr;
     };
 
 }

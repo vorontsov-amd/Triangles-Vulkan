@@ -21,6 +21,7 @@ set(ENGINE_PRIVATE_INCLUDES
 	src/Rendering/Vulkan/ValidationLayer.hpp
 	src/Rendering/Vulkan/DebugMessenger.hpp
 	src/Rendering/Vulkan/Instance.hpp
+	src/Rendering/Vulkan/WindowSurface.hpp
 )
 
 set(ENGINE_PRIVATE_SOURCES
@@ -55,15 +56,13 @@ target_compile_features(${ENGINE_PROJECT_NAME} PUBLIC cxx_std_17)
 
 add_subdirectory(../../3rd-party/glfw ${CMAKE_CURRENT_BINARY_DIR}/glfw)
 target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE glfw)
-#set(GLFWPP_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE) # disable building GLFWPP examples
-#add_subdirectory(../../3rd-party/glfwpp ${CMAKE_CURRENT_BINARY_DIR}/glfwpp)
-#target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE GLFWPP)
 
 add_subdirectory(../../3rd-party/spdlog ${CMAKE_CURRENT_BINARY_DIR}/spdlog)
 target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE spdlog)
 
 add_subdirectory(../../3rd-party/glm ${CMAKE_CURRENT_BINARY_DIR}/glm)
 target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE glm)
+
 
 set(IMGUI_INCLUDES
 	../../3rd-party/imgui/imgui.h
@@ -75,7 +74,6 @@ set(IMGUI_INCLUDES
 	../../3rd-party/imgui/imstb_textedit.h
 	../../3rd-party/imgui/imstb_truetype.h
 )
-
 
 set(IMGUI_SOURCES
 	../../3rd-party/imgui/imgui.cpp
@@ -97,3 +95,22 @@ target_include_directories(ImGui PUBLIC ../../3rd-party/imgui)
 target_link_libraries(ImGui PRIVATE glfw)
 
 target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE ImGui)
+
+
+# function(compile_shaders OUTPUT_FILE INPUT_FILE)
+# 	add_custom_command(
+# 		OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/${OUTPUT_FILE}
+# 		COMMAND "glslc ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT_FILE} -o ${CMAKE_CURRENT_SOURCE_DIR}/${OUTPUT_FILE}"
+# 	)	
+# endfunction()
+
+# compile_shaders(shaders/frag.spv shaders/shader.frag)
+# compile_shaders(shaders/vert.spv shaders/shader.vert)
+
+add_custom_command(
+  OUTPUT shaders/frag.spv
+  COMMAND glslc shaders/shader.frag -o ${CMAKE_CURRENT_SOURCE_DIR}/shaders/frag.spv 
+  DEPENDS shaders/shader.frag
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+  VERBATIM
+)

@@ -48,6 +48,14 @@
         "utility": "cpp",
         "valarray": "cpp",
         "cassert": "cpp",
-        "span": "cpp"
+        "span": "cpp",
+        "atomic": "cpp",
+        "charconv": "cpp",
+        "condition_variable": "cpp",
+        "cstdarg": "cpp",
+        "mutex": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp",
+        "thread": "cpp"
     }
 }
