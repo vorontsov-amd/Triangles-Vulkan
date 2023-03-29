@@ -93,24 +93,9 @@ add_library(ImGui STATIC
 target_include_directories(ImGui PUBLIC ../../3rd-party)
 target_include_directories(ImGui PUBLIC ../../3rd-party/imgui)
 target_link_libraries(ImGui PRIVATE glfw)
-
 target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE ImGui)
 
-
-# function(compile_shaders OUTPUT_FILE INPUT_FILE)
-# 	add_custom_command(
-# 		OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/${OUTPUT_FILE}
-# 		COMMAND "glslc ${CMAKE_CURRENT_SOURCE_DIR}/${INPUT_FILE} -o ${CMAKE_CURRENT_SOURCE_DIR}/${OUTPUT_FILE}"
-# 	)	
-# endfunction()
-
-# compile_shaders(shaders/frag.spv shaders/shader.frag)
-# compile_shaders(shaders/vert.spv shaders/shader.vert)
-
-add_custom_command(
-  OUTPUT shaders/frag.spv
-  COMMAND glslc shaders/shader.frag -o ${CMAKE_CURRENT_SOURCE_DIR}/shaders/frag.spv 
-  DEPENDS shaders/shader.frag
-  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-  VERBATIM
+execute_process(
+	COMMAND glslc ${CMAKE_CURRENT_SOURCE_DIR}/shaders/shader.vert -o ${CMAKE_CURRENT_SOURCE_DIR}/shaders/vert.spv
+	COMMAND glslc ${CMAKE_CURRENT_SOURCE_DIR}/shaders/shader.frag -o ${CMAKE_CURRENT_SOURCE_DIR}/shaders/frag.spv
 )
