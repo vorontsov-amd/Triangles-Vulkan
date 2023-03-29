@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-set(EDITOR_PROJECT_NAME SimpleEngineEditor)
+set(EDITOR_PROJECT_NAME triangles)
 
 add_executable(${EDITOR_PROJECT_NAME}
 	src/VkEngineEditor.cpp

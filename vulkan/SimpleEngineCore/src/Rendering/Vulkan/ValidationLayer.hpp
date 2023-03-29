@@ -12,7 +12,7 @@ namespace SimpleEngine {
 
     #ifdef NDEBUG
         static constexpr const bool enable = false;
-        static constexpr const std::array<const char*, 1> validationLayers = {};
+        static constexpr const std::array<const char*, 0> validationLayers = {};
     #else
         static constexpr const bool enable = true;
         static constexpr const std::array<const char*, 1> validationLayers = {"VK_LAYER_KHRONOS_validation"};
