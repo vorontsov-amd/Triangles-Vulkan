@@ -18,14 +18,11 @@
 #include <cstdint>
 #include <optional>
 #include <set>
-#include "VulkanUtility.hpp"
 
 namespace SimpleEngine {
 
     static const int MAX_FRAMES_IN_FLIGHT = 2;
 
-<<<<<<< HEAD
-=======
     static const std::vector<const char*> deviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
@@ -51,7 +48,6 @@ namespace SimpleEngine {
     };
 
 
->>>>>>> newHead
     struct UniformBufferObject {
         alignas(16) glm::mat4 model;
         alignas(16) glm::mat4 view;
@@ -90,21 +86,13 @@ namespace SimpleEngine {
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-<<<<<<< HEAD
-    VulkanRenderer::VulkanRenderer(const std::unique_ptr<Window>& pWindow) : 
-        window          {VulkanWindow::  make(pWindow)}, 
-        surface         {Surface::       make(instance, window)},
-        debugMessenger  {DebugMessenger::make(instance)},
-        physicalDevice  {PhysicalDevice::make(instance, surface)},
-        device          {LogicalDevice:: make(instance, surface, physicalDevice, graphicsQueue, presentQueue)},
-        swapChain       {SwapChain::     make(window, surface, physicalDevice, device, swapChainImages, swapChainImageFormat, swapChainExtent)}
-    
-=======
-    VulkanRenderer::VulkanRenderer(EventDispatcher& event_dispatcher, const std::unique_ptr<Window>& pWindow) : window{VulkanWindow::make(pWindow)}, surface{Surface::make(instance, window)}
->>>>>>> newHead
+    VulkanRenderer::VulkanRenderer(EventDispatcher& event_dispatcher, const std::unique_ptr<Window>& pWindow) : 
+        window{VulkanWindow::make(pWindow)}, 
+        surface{Surface::make(instance, window)},
+        debugMessenger{DebugMessenger::make(instance)} 
     {
-        DebugMessenger::setup(instance, debugMessenger);
-        
+
+
         event_dispatcher.add_event_listener<EventFramebufferResize>(
             [&](EventFramebufferResize& event)
             {
@@ -113,19 +101,9 @@ namespace SimpleEngine {
             }
         );
 
-<<<<<<< HEAD
-        pWindow->set_event_callback(
-            [&](BaseEvent& event)
-            {
-                m_event_dispatcher.dispatch(event);
-            }
-        );
-
-=======
         pickPhysicalDevice();
         createLogicalDevice();
         createSwapChain();
->>>>>>> newHead
         createImageViews();
         createRenderPass();
         createDescriptorSetLayout();
@@ -251,14 +229,9 @@ namespace SimpleEngine {
         device.destroySwapchainKHR(swapChain, nullptr);
     }
 
-<<<<<<< HEAD
-    VulkanRenderer::~VulkanRenderer() {
-        
-=======
     //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     VulkanRenderer::~VulkanRenderer() {
->>>>>>> newHead
         device.waitIdle();
         cleanupSwapChain();
 
@@ -302,10 +275,6 @@ namespace SimpleEngine {
         }
 
         device.waitIdle();
-<<<<<<< HEAD
-=======
-
->>>>>>> newHead
         cleanupSwapChain();
 
         createSwapChain();
@@ -314,17 +283,6 @@ namespace SimpleEngine {
         createFramebuffers();
     }
 
-<<<<<<< HEAD
-
-    void VulkanRenderer::createSurface() {
-        VkSurfaceKHR surfaceCore {};
-        if (window->createWindowSurface(instance, &surfaceCore) != VK_SUCCESS) {
-            throw std::runtime_error("failed to create window surface!");
-        }
-        surface = static_cast<vk::SurfaceKHR>(surfaceCore);
-    }
-
-=======
     //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     void VulkanRenderer::pickPhysicalDevice() {
@@ -426,7 +384,6 @@ namespace SimpleEngine {
         swapChainImageFormat = surfaceFormat.format;
         swapChainExtent = extent;
     }
->>>>>>> newHead
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -668,7 +625,7 @@ namespace SimpleEngine {
     //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
     void VulkanRenderer::createCommandPool() {
-        QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice, surface);
+        QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
         vk::CommandPoolCreateInfo poolInfo {
             vk::CommandPoolCreateFlagBits::eResetCommandBuffer,
             queueFamilyIndices.graphicsFamily.value()
@@ -1015,8 +972,6 @@ namespace SimpleEngine {
         vk::resultCheck(device.createShaderModule(&createInfo, nullptr, &shaderModule), "failed to create shader module!");
         return shaderModule;
     }
-<<<<<<< HEAD
-=======
 
     //------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -1123,5 +1078,4 @@ namespace SimpleEngine {
         return indices;
     }
 
->>>>>>> newHead
 }

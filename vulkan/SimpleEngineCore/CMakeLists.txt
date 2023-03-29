@@ -22,12 +22,6 @@ set(ENGINE_PRIVATE_INCLUDES
 	src/Rendering/Vulkan/DebugMessenger.hpp
 	src/Rendering/Vulkan/Instance.hpp
 	src/Rendering/Vulkan/WindowSurface.hpp
-<<<<<<< HEAD
-	src/Rendering/Vulkan/Device.hpp
-	src/Rendering/Vulkan/VulkanUtility.hpp
-	src/Rendering/Vulkan/Swapchain.hpp
-=======
->>>>>>> newHead
 )
 
 set(ENGINE_PRIVATE_SOURCES
@@ -70,36 +64,36 @@ add_subdirectory(../../3rd-party/glm ${CMAKE_CURRENT_BINARY_DIR}/glm)
 target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE glm)
 
 
-set(IMGUI_INCLUDES
-	../../3rd-party/imgui/imgui.h
-	../../3rd-party/imgui/backends/imgui_impl_glfw.h
-	../../3rd-party/imgui/backends/imgui_impl_vulkan.h
-	../../3rd-party/imgui/imgui_internal.h
-	../../3rd-party/imgui/imconfig.h
-	../../3rd-party/imgui/imstb_rectpack.h
-	../../3rd-party/imgui/imstb_textedit.h
-	../../3rd-party/imgui/imstb_truetype.h
-)
+# set(IMGUI_INCLUDES
+# 	../../3rd-party/imgui/imgui.h
+# 	../../3rd-party/imgui/backends/imgui_impl_glfw.h
+# 	../../3rd-party/imgui/backends/imgui_impl_vulkan.h
+# 	../../3rd-party/imgui/imgui_internal.h
+# 	../../3rd-party/imgui/imconfig.h
+# 	../../3rd-party/imgui/imstb_rectpack.h
+# 	../../3rd-party/imgui/imstb_textedit.h
+# 	../../3rd-party/imgui/imstb_truetype.h
+# )
 
-set(IMGUI_SOURCES
-	../../3rd-party/imgui/imgui.cpp
-	../../3rd-party/imgui/backends/imgui_impl_glfw.cpp
-	../../3rd-party/imgui/backends/imgui_impl_vulkan.cpp
-	../../3rd-party/imgui/imgui_demo.cpp
-	../../3rd-party/imgui/imgui_tables.cpp
-	../../3rd-party/imgui/imgui_widgets.cpp
-	../../3rd-party/imgui/imgui_draw.cpp
-)
+# set(IMGUI_SOURCES
+# 	../../3rd-party/imgui/imgui.cpp
+# 	../../3rd-party/imgui/backends/imgui_impl_glfw.cpp
+# 	../../3rd-party/imgui/backends/imgui_impl_vulkan.cpp
+# 	../../3rd-party/imgui/imgui_demo.cpp
+# 	../../3rd-party/imgui/imgui_tables.cpp
+# 	../../3rd-party/imgui/imgui_widgets.cpp
+# 	../../3rd-party/imgui/imgui_draw.cpp
+# )
 
-add_library(ImGui STATIC
-	${IMGUI_INCLUDES}
-	${IMGUI_SOURCES}
-)
+# add_library(ImGui STATIC
+# 	${IMGUI_INCLUDES}
+# 	${IMGUI_SOURCES}
+# )
 
-target_include_directories(ImGui PUBLIC ../../3rd-party)
-target_include_directories(ImGui PUBLIC ../../3rd-party/imgui)
-target_link_libraries(ImGui PRIVATE glfw)
-target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE ImGui)
+# target_include_directories(ImGui PUBLIC ../../3rd-party)
+# target_include_directories(ImGui PUBLIC ../../3rd-party/imgui)
+# target_link_libraries(ImGui PRIVATE glfw)
+# target_link_libraries(${ENGINE_PROJECT_NAME} PRIVATE ImGui)
 
 execute_process(
 	COMMAND glslc ${CMAKE_CURRENT_SOURCE_DIR}/shaders/shader.vert -o ${CMAKE_CURRENT_SOURCE_DIR}/shaders/vert.spv

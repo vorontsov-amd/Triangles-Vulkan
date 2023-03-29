@@ -45,16 +45,9 @@ namespace SimpleEngine {
 
         int init();
         void shutdown();
-<<<<<<< HEAD
-
-        WindowData m_data;
-
-    public:
-=======
         WindowData m_data;
 
     protected:
->>>>>>> newHead
         GLFWwindow* m_pWindow = nullptr;
     };
 

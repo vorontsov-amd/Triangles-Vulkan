@@ -9,8 +9,6 @@
 #include "ValidationLayer.hpp"
 #include "Rendering/Vulkan/VertexArray.hpp"
 #include "WindowSurface.hpp"
-#include "Device.hpp"
-
 #include <iostream>
 
 namespace SimpleEngine {
@@ -20,11 +18,7 @@ namespace SimpleEngine {
 
     class VulkanRenderer {
     public:        
-<<<<<<< HEAD
-        explicit VulkanRenderer(const std::unique_ptr<Window>& pWindow);
-=======
         explicit VulkanRenderer(EventDispatcher& event_dispatcher, const std::unique_ptr<Window>& pWindow);
->>>>>>> newHead
         ~VulkanRenderer();
 
         void drawFrame(const glm::mat4& view, const glm::mat4& proj, const glm::vec3& camera_pos);
@@ -70,19 +64,11 @@ namespace SimpleEngine {
         SwapChainSupportDetails querySwapChainSupport(vk::PhysicalDevice device) const;
         bool isDeviceSuitable(vk::PhysicalDevice device);
         static bool checkDeviceExtensionSupport(vk::PhysicalDevice device);
-<<<<<<< HEAD
-        static std::vector<const char*> getRequiredExtensions();
-        bool checkValidationLayerSupport();
-
-    private:
-        VulkanWindow* window;
-=======
         QueueFamilyIndices findQueueFamilies(vk::PhysicalDevice device) const;
 
     private:
         VulkanWindow* window;
 
->>>>>>> newHead
         Instance instance;
         vk::SurfaceKHR surface;
         vk::DebugUtilsMessengerEXT debugMessenger;
@@ -92,9 +78,6 @@ namespace SimpleEngine {
 
         vk::Queue graphicsQueue;
         vk::Queue presentQueue;
-
-        EventDispatcher m_event_dispatcher;
-        bool framebufferResized = false;
 
         vk::SwapchainKHR swapChain;
         std::vector<vk::Image> swapChainImages;
