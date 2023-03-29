@@ -28,7 +28,7 @@ You can find all binaries in dir build/bin
 
 Main programm: 
 ``` cmd
-$ ./bin/triangle
+$ ./bin/triangles
 ```
 Test for triangles:
 
@@ -48,7 +48,7 @@ I used Vulkan-Hpp to visualize the intersection. The red triangles are the inter
 
 to view the text example, use
 ``` cmd
-$ ./bin/triangle < ./bin/10000.1.txt
+$ ./bin/triangles < ./bin/10000.1.txt
 ```
 
 ## Useful materials:
