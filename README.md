@@ -8,6 +8,8 @@ The following applications have to be installed:
 1. CMake 3.2 version (or higher)
 2. GTest
 3. c++ compiliter
+4. Vulkan-Hpp
+5. glslc compiller for shaders
 
 
 ## Compiling 
